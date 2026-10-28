@@ -14,7 +14,8 @@ Tudo já está no ar e conectado ao banco. Este guia é o seu "como usar" do dia
 | Painel da Vercel | https://vercel.com/re-r-sports/ricartes-renda-extra |
 | Banco (Neon) | https://console.neon.tech |
 
-Senha atual do painel: **`zY9c4V-v2QchR`** (troque quando quiser — veja abaixo).
+A senha do painel **não fica neste repositório** (ele é público): ela está na variável `APP_PASSWORD`
+do projeto na Vercel. Para trocar, siga o passo a passo mais abaixo.
 
 ## O que já está funcionando
 
