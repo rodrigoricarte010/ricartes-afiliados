@@ -32,6 +32,46 @@ async function main() {
     seed: buildDemoDatabase,
   });
 
+  console.log('\n0. Normalização limpa a copy antiga da demonstração');
+  const legacy = normalizeDatabase({
+    settings: { ...buildDemoDatabase().settings, is_demo: true },
+    infoproducts: [
+      {
+        id: 'inf_old',
+        slug: 'antigo',
+        name: 'Antigo',
+        tagline: 'O método que transformou 3 seguidores em R$ 7.400/mês de comissão',
+        description: '',
+        price: 97,
+        benefits: [],
+        bonuses: [],
+        testimonials: [
+          { name: 'Juliana M.', role: 'Aluna desde março', text: 'Em 3 semanas bati R$ 1.200 de comissão só replicando os roteiros do módulo 2.' },
+        ],
+        checkout_url: '',
+        theme: 'royal',
+        status: 'ativo',
+        created_at: new Date().toISOString(),
+      },
+    ],
+  });
+  const fixed = legacy.infoproducts[0]!;
+  check('tagline sem promessa de resultado', !/R\$/.test(fixed.tagline), fixed.tagline);
+  check('depoimento sem valor inventado', !/R\$/.test(fixed.testimonials[0]!.text), fixed.testimonials[0]!.text);
+  check('papel do depoimento marcado como exemplo', fixed.testimonials[0]!.role === 'Exemplo de depoimento');
+
+  const userEdited = normalizeDatabase({
+    settings: { ...buildDemoDatabase().settings, is_demo: true },
+    infoproducts: [{ ...fixed, tagline: 'Meu texto, editado por mim', testimonials: [] }],
+  });
+  check('texto editado pelo usuário é preservado', userEdited.infoproducts[0]!.tagline === 'Meu texto, editado por mim');
+
+  const notDemo = normalizeDatabase({
+    settings: { ...buildDemoDatabase().settings, is_demo: false },
+    infoproducts: [{ ...fixed, tagline: 'Texto real do meu produto' }],
+  });
+  check('fora da demonstração nada é reescrito', notDemo.infoproducts[0]!.tagline === 'Texto real do meu produto');
+
   console.log('\n1. Semeia o banco vazio na primeira leitura');
   const initial = await store.load();
   check('produtos criados', initial.products.length === 10, initial.products.length);
