@@ -322,6 +322,31 @@ export async function saveSettingsAction(_prev: ActionState, formData: FormData)
   return { ok: true, message: 'Configurações salvas.' };
 }
 
+export async function importBackupAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await guard();
+
+  const file = formData.get('backup');
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, message: 'Selecione o arquivo JSON de backup.' };
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    return { ok: false, message: 'Arquivo muito grande (limite de 25 MB).' };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await file.text());
+  } catch {
+    return { ok: false, message: 'Não consegui ler o arquivo: JSON inválido.' };
+  }
+
+  const result = await repo.importDatabase(parsed);
+  if (!result.ok) return { ok: false, message: result.message };
+
+  revalidateAll();
+  return { ok: true, message: result.message };
+}
+
 export async function resetDemoAction(): Promise<void> {
   await guard();
   await repo.resetDemo();

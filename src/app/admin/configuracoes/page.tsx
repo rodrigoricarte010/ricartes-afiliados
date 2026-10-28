@@ -4,6 +4,7 @@ import { appUrl } from '@/lib/url';
 import { PageHeader, SectionCard, Alert } from '@/components/ui';
 import { CopyButton } from '@/components/CopyButton';
 import { SettingsForm } from './SettingsForm';
+import { BackupCard } from './BackupCard';
 import { resetDemoAction } from '../actions';
 
 export const dynamic = 'force-dynamic';
@@ -93,6 +94,39 @@ export default async function SettingsPage() {
             </Alert>
           </SectionCard>
 
+          <SectionCard title="Sua página de links (bio)" subtitle="O link que vai na bio do TikTok e do Instagram">
+            <div className="flex items-start gap-3">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/api/qr?data=${encodeURIComponent(`${base}/${db.settings.handle.replace(/^@/, '')}`)}&size=160`}
+                alt="QR Code da página de links"
+                width={72}
+                height={72}
+                className="shrink-0 rounded-lg bg-white p-1"
+              />
+              <div className="min-w-0 flex-1">
+                <code className="block truncate rounded-lg border border-white/10 bg-ink-900/70 px-2.5 py-2 text-[11px] text-brand-200">
+                  {base}/{db.settings.handle.replace(/^@/, '')}
+                </code>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  <CopyButton value={`${base}/${db.settings.handle.replace(/^@/, '')}`} label="Copiar" compact />
+                  <a
+                    href={`/${db.settings.handle.replace(/^@/, '')}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn-ghost btn-sm"
+                  >
+                    Abrir ↗
+                  </a>
+                </div>
+              </div>
+            </div>
+            <p className="mt-3 text-[11px] leading-snug text-white/35">
+              Mostra seu perfil, seus produtos ativos, os botões das redes e o destaque do infoproduto. Todo clique é
+              contabilizado com a origem <code className="text-white/60">bio</code>.
+            </p>
+          </SectionCard>
+
           <SectionCard title="Seus endereços">
             <ul className="space-y-2 text-xs">
               <li className="flex items-center justify-between gap-2">
@@ -112,6 +146,14 @@ export default async function SettingsPage() {
                 </li>
               ))}
             </ul>
+          </SectionCard>
+
+          <SectionCard title="Backup dos dados" subtitle="Salve ou restaure tudo em um arquivo JSON">
+            <BackupCard />
+            <p className="mt-3 text-[10px] leading-snug text-white/25">
+              Recomendado enquanto o banco estiver no modo arquivo local: o disco da Vercel é temporário e o backup é a
+              sua garantia.
+            </p>
           </SectionCard>
 
           <SectionCard title="Dados de demonstração">

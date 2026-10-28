@@ -136,6 +136,15 @@ export function Sidebar({
               <Link href="/admin/links" className="badge bg-white/10 text-white/70 ring-white/15">
                 Novo link
               </Link>
+              <a
+                href={`/${handle.replace(/^@/, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="badge bg-brand-500/15 text-brand-200 ring-brand-500/25"
+                title="Abrir sua página de link na bio"
+              >
+                Página bio ↗
+              </a>
             </div>
           </div>
         </div>

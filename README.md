@@ -42,12 +42,30 @@ Passo a passo de cadastro em cada programa, requisitos, faixas de comissão, pra
 atribuição e um plano de 7 dias para a primeira comissão. Conteúdo verificado em outubro/2026 — sempre confirme
 no site oficial, pois as regras mudam.
 
-### 5. Páginas públicas
+### 5. Página de link na bio (`/<seu-handle>`)
+O endereço que vai na bio do TikTok e do Instagram — a superfície que mais converte para afiliado:
+- perfil com foto/iniciais, nome, @, bio e selos de credibilidade;
+- botões das redes (TikTok, Instagram, WhatsApp);
+- destaque do infoproduto com CTA de compra;
+- produtos ativos agrupados por categoria, com preço e botão de oferta;
+- todos os cliques passam pelo link rastreável com `utm_source=bio` — dá para comparar bio × vídeo × stories no painel;
+- QR Code da página disponível em Configurações.
+
+Aceita `/<handle>` e `/<handle>` com `@` (ex.: `/ricartes` ou `/@ricartes`), além do alias `/links`.
+
+### 6. Backup dos dados
+- **Baixar backup (JSON)** em Configurações → exporta todo o banco (`/api/backup`, protegido por sessão).
+- **Importar backup** → valida a estrutura antes de gravar e substitui o conteúdo atual.
+- Essencial enquanto o banco estiver no modo arquivo local, já que o disco da Vercel é temporário.
+
+### 7. Páginas públicas
 - `/` — landing da plataforma com as métricas reais do seu painel.
+- `/<handle>` — página de link na bio.
 - `/p/<slug>` — página de vendas.
 - `/p/<slug>/obrigado?pedido=<id>` — pós-compra com Pix e WhatsApp.
 - `/r/<slug>` — redirecionamento rastreável (302 para o link de afiliado, registrando clique, origem e dispositivo).
 - `/api/qr?data=...&size=...` — QR Code em PNG.
+- `/api/backup` — exportação do banco em JSON (requer sessão).
 
 ---
 
@@ -89,7 +107,9 @@ Grava em `.data/db.json` (ignorado pelo git). Ótimo para testar. Em serverless 
 **use Supabase em produção**.
 
 ### Supabase (produção)
-1. Crie um projeto em [supabase.com/dashboard](https://supabase.com/dashboard).
+1. Crie um projeto em [supabase.com/dashboard](https://supabase.com/dashboard) — o plano gratuito limita a
+   quantidade de projetos ativos por organização; se o limite estiver atingido, pause/remova um projeto antigo ou
+   faça upgrade.
 2. Abra **SQL Editor** e rode o conteúdo de [`supabase/schema.sql`](supabase/schema.sql).
 3. Copie URL e service role key em **Project Settings → API**.
 4. Defina `DB_DRIVER=supabase` e as duas variáveis no ambiente (Vercel → Settings → Environment Variables).
@@ -128,9 +148,11 @@ src/
 │   │   ├── infoprodutos/         CRUD de infoprodutos
 │   │   ├── guia/                 guia de afiliação
 │   │   └── configuracoes/        perfil, programas, banco
+│   ├── [handle]/                 página de link na bio
 │   ├── p/[slug]/                 página de vendas + obrigado
 │   ├── r/[slug]/                 redirecionamento rastreável
-│   └── api/qr/                   geração de QR
+│   ├── api/qr/                   geração de QR
+│   └── api/backup/               exportação do banco em JSON
 ├── components/                   UI, gráficos SVG, sidebar, toasts
 └── lib/
     ├── types.ts                  modelo de domínio

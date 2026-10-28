@@ -55,7 +55,7 @@ class FileStore implements Store {
     try {
       const raw = await fs.readFile(DATA_FILE, 'utf8');
       const parsed = JSON.parse(raw) as Partial<Database>;
-      return normalize(parsed);
+      return normalizeDatabase(parsed);
     } catch {
       const demo = buildDemoDatabase();
       await this.save(demo, 'settings');
@@ -74,7 +74,7 @@ class FileStore implements Store {
   }
 }
 
-function normalize(partial: Partial<Database>): Database {
+export function normalizeDatabase(partial: Partial<Database>): Database {
   return {
     settings: { ...DEMO_SETTINGS, ...(partial.settings ?? {}) },
     products: partial.products ?? [],
@@ -143,7 +143,7 @@ class SupabaseStore implements Store {
       return demo;
     }
 
-    const db: Database = normalize({
+    const db: Database = normalizeDatabase({
       settings: (settingsRes.data?.data as Settings | undefined) ?? undefined,
       products: (products.data as Product[]) ?? [],
       clicks: (clicks.data as ClickEvent[]) ?? [],
@@ -392,5 +392,54 @@ export const repo = {
   async isEmpty(): Promise<boolean> {
     const db = await store().load();
     return db.products.length === 0 && db.infoproducts.length === 0;
+  },
+
+  /**
+   * Substitui todo o banco pelo conteúdo de um backup JSON.
+   * Valida a forma dos dados antes de gravar (nada de confiar no arquivo).
+   */
+  async importDatabase(input: unknown): Promise<{ ok: boolean; message: string; counts?: Record<string, number> }> {
+    if (!input || typeof input !== 'object') {
+      return { ok: false, message: 'Arquivo inválido: esperado um objeto JSON.' };
+    }
+    const raw = input as Record<string, unknown>;
+    const tables = ['products', 'clicks', 'conversions', 'content_posts', 'infoproducts', 'orders'] as const;
+
+    for (const table of tables) {
+      const value = raw[table];
+      if (value !== undefined && !Array.isArray(value)) {
+        return { ok: false, message: `Estrutura inválida: "${table}" deveria ser uma lista.` };
+      }
+    }
+
+    const db = normalizeDatabase(raw as Partial<Database>);
+
+    // integridade mínima: cada linha precisa de um id
+    for (const table of tables) {
+      const rows = db[table] as unknown as { id?: unknown }[];
+      const broken = rows.find((row) => !row || typeof row !== 'object' || typeof row.id !== 'string');
+      if (broken) {
+        return { ok: false, message: `Estrutura inválida em "${table}": registro sem id.` };
+      }
+    }
+
+    if (db.products.length === 0 && db.infoproducts.length === 0) {
+      return { ok: false, message: 'O backup está vazio — nada foi importado.' };
+    }
+
+    await store().save(db, 'settings');
+
+    return {
+      ok: true,
+      message: 'Backup importado com sucesso.',
+      counts: {
+        products: db.products.length,
+        clicks: db.clicks.length,
+        conversions: db.conversions.length,
+        content_posts: db.content_posts.length,
+        infoproducts: db.infoproducts.length,
+        orders: db.orders.length,
+      },
+    };
   },
 };
