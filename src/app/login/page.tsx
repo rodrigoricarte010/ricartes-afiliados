@@ -25,13 +25,15 @@ export default async function LoginPage() {
         <div className="mt-6 space-y-3">
           <div className="flex items-center justify-center gap-2 text-[11px] text-white/30">
             <span className="badge badge-live">● sistema online</span>
-            <span className="badge bg-white/[0.06] text-white/45 ring-white/10">dados de demonstração</span>
           </div>
-          <p className="text-center text-xs leading-relaxed text-white/30">
-            Senha padrão: <code className="rounded bg-white/10 px-1.5 py-0.5 text-white/60">ricartes</code>
-            <br />
-            Troque em <code className="text-white/50">APP_PASSWORD</code> no arquivo <code className="text-white/50">.env</code>.
-          </p>
+          {/* Dica de senha apenas em desenvolvimento — nunca em produção. */}
+          {process.env.NODE_ENV !== 'production' && (
+            <p className="text-center text-xs leading-relaxed text-white/30">
+              Senha padrão: <code className="rounded bg-white/10 px-1.5 py-0.5 text-white/60">ricartes</code>
+              <br />
+              Troque em <code className="text-white/50">APP_PASSWORD</code> no arquivo <code className="text-white/50">.env</code>.
+            </p>
+          )}
         </div>
       </div>
     </div>
