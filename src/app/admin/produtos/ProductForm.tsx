@@ -1,10 +1,11 @@
 'use client';
 
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useEffect, useMemo, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { saveProductAction, type ActionState } from '@/app/admin/actions';
 import { toast } from '@/components/Toast';
 import { slugify } from '@/lib/format';
+import { inspectAffiliateLink } from '@/lib/affiliate';
 import { PLATFORM_LABEL, type Platform, type Product } from '@/lib/types';
 
 const PLATFORMS = Object.keys(PLATFORM_LABEL) as Platform[];
@@ -36,6 +37,24 @@ export function ProductForm({ product }: { product?: Product }) {
   const [slug, setSlug] = useState(product?.slug ?? '');
   const [price, setPrice] = useState(product ? String(product.price).replace('.', ',') : '');
   const [commission, setCommission] = useState(product ? String(product.commission_pct).replace('.', ',') : '12');
+  const [url, setUrl] = useState(product?.affiliate_url ?? '');
+  const [platform, setPlatform] = useState<Platform>(product?.platform ?? 'shopee');
+
+  // Só sobrescreve o que o usuário não mexeu à mão.
+  const platformTouched = useRef(Boolean(product));
+  const commissionTouched = useRef(Boolean(product));
+
+  const insight = useMemo(() => inspectAffiliateLink(url), [url]);
+
+  useEffect(() => {
+    if (!url.trim()) return;
+    if (insight.platform && !platformTouched.current) {
+      setPlatform(insight.platform);
+      if (insight.suggestedCommission && !commissionTouched.current) {
+        setCommission(String(insight.suggestedCommission));
+      }
+    }
+  }, [insight, url]);
 
   useEffect(() => {
     if (state.message) toast(state.message, state.ok ? 'success' : 'error');
@@ -72,13 +91,27 @@ export function ProductForm({ product }: { product?: Product }) {
           <label htmlFor="platform" className="label">
             Plataforma
           </label>
-          <select id="platform" name="platform" defaultValue={product?.platform ?? 'shopee'} className="input">
+          <select
+            id="platform"
+            name="platform"
+            value={platform}
+            onChange={(e) => {
+              platformTouched.current = true;
+              setPlatform(e.target.value as Platform);
+            }}
+            className="input"
+          >
             {PLATFORMS.map((p) => (
               <option key={p} value={p} className="bg-ink-900">
                 {PLATFORM_LABEL[p]}
               </option>
             ))}
           </select>
+          {insight.platform && (
+            <p className="mt-1.5 text-[11px] text-brand-300/80">
+              ✓ link do {PLATFORM_LABEL[insight.platform]} detectado
+            </p>
+          )}
         </div>
 
         <div>
@@ -124,7 +157,10 @@ export function ProductForm({ product }: { product?: Product }) {
             name="commission_pct"
             inputMode="decimal"
             value={commission}
-            onChange={(e) => setCommission(e.target.value)}
+            onChange={(e) => {
+              commissionTouched.current = true;
+              setCommission(e.target.value);
+            }}
             placeholder="12"
             className="input"
           />
@@ -144,13 +180,33 @@ export function ProductForm({ product }: { product?: Product }) {
             name="affiliate_url"
             required
             type="url"
-            defaultValue={product?.affiliate_url ?? ''}
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
             placeholder="https://shopee.com.br/product/...?af_siteid=seu_id"
             className="input"
           />
-          <p className="mt-1.5 text-[11px] text-white/35">
-            Gere esse link no painel da Shopee/TikTok Shop/Mercado Livre. O visitante será redirecionado para ele.
-          </p>
+          {url.trim().length > 6 && insight.hint ? (
+            <p className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] text-white/45">
+              <span>{insight.hint}</span>
+              {insight.name && name.trim().length === 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setName(insight.name!);
+                    setSlug(slugify(insight.name!));
+                  }}
+                  className="rounded-md bg-brand-500/15 px-2 py-0.5 text-brand-200 hover:bg-brand-500/25"
+                >
+                  usar “{insight.name}”
+                </button>
+              )}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-[11px] text-white/35">
+              Gere esse link no painel da Shopee/TikTok Shop/Mercado Livre. O visitante será redirecionado para ele —
+              a plataforma é detectada automaticamente.
+            </p>
+          )}
         </div>
 
         <div>

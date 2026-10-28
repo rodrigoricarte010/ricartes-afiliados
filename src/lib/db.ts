@@ -316,6 +316,37 @@ export const repo = {
     return product;
   },
 
+  /**
+   * Cadastra vários produtos de uma vez (importação em massa).
+   * Uma única leitura + escrita, em vez de N idas ao banco.
+   */
+  async saveProducts(
+    inputs: (Omit<Product, 'id' | 'created_at'> & { id?: string })[],
+  ): Promise<Product[]> {
+    if (!inputs.length) return [];
+    const db = await store().load();
+    const now = new Date().toISOString();
+
+    const created = inputs.map((input) => {
+      const existing = input.id ? db.products.find((p) => p.id === input.id) : undefined;
+      const product: Product = {
+        ...input,
+        id: existing?.id ?? input.id ?? uid('prd'),
+        created_at: existing?.created_at ?? now,
+      };
+      const idx = db.products.findIndex((p) => p.id === product.id);
+      if (idx >= 0) db.products[idx] = product;
+      else db.products.push(product);
+      return product;
+    });
+
+    // mantém a ordem de cadastro mais recente primeiro
+    db.products.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    await store().save(db, ['products']);
+    return created;
+  },
+
   async deleteProduct(id: string): Promise<void> {
     const db = await store().load();
     db.products = db.products.filter((p) => p.id !== id);

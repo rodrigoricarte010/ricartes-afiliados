@@ -90,6 +90,7 @@ roteiros e 2 infoprodutos de exemplo.
 ```bash
 npm run build && npm start   # produção
 npm run typecheck            # checagem de tipos
+npm run test:links           # testes da leitura de links de afiliado
 ```
 
 ### Variáveis de ambiente
@@ -190,7 +191,8 @@ src/
 │   │   ├── layout.tsx            shell + guarda de sessão
 │   │   ├── actions.ts            todas as Server Actions
 │   │   ├── page.tsx              dashboard
-│   │   ├── produtos/             CRUD de produtos afiliados
+│   │   ├── produtos/             CRUD, busca e filtros de produtos afiliados
+│   │   ├── produtos/importar/    importação em massa por lista de links
 │   │   ├── links/                links rastreáveis + QR
 │   │   ├── conteudo/             estúdio de conteúdo + calendário
 │   │   ├── vendas/               comissões e pedidos

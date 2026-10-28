@@ -1,12 +1,11 @@
 import Link from 'next/link';
 import { repo } from '@/lib/db';
-import { brl, num, pct } from '@/lib/format';
+import { brl, num } from '@/lib/format';
 import { productStats } from '@/lib/stats';
 import { appUrl } from '@/lib/url';
 import { PageHeader, EmptyState, SectionCard } from '@/components/ui';
 import { ProductForm } from './ProductForm';
-import { ProductRowActions } from './ProductRowActions';
-import { PLATFORM_COLOR, PLATFORM_LABEL } from '@/lib/types';
+import { ProductTable, type ProductRow } from './ProductTable';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Produtos afiliados' };
@@ -25,9 +24,14 @@ export default async function ProductsPage() {
         title="Produtos afiliados"
         description="Cadastre os produtos que você divulga. Cada produto gera um link rastreável com contagem de cliques e comissão."
         action={
-          <Link href="/admin/links" className="btn-ghost btn-sm sm:text-sm">
-            ⇄ Links & QR
-          </Link>
+          <>
+            <Link href="/admin/produtos/importar" className="btn-ghost btn-sm sm:text-sm">
+              ⇪ Importar lista
+            </Link>
+            <Link href="/admin/links" className="btn-ghost btn-sm sm:text-sm">
+              ⇄ Links & QR
+            </Link>
+          </>
         }
       />
 
@@ -57,65 +61,30 @@ export default async function ProductsPage() {
                 <EmptyState
                   icon="◈"
                   title="Nenhum produto ainda"
-                  description="Use o formulário ao lado para cadastrar seu primeiro produto de afiliado."
+                  description="Use o formulário ao lado para cadastrar seu primeiro produto — ou cole uma lista de links de uma vez."
+                  action={
+                    <Link href="/admin/produtos/importar" className="btn-ghost btn-sm">
+                      ⇪ Importar lista de links
+                    </Link>
+                  }
                 />
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="table-base">
-                  <thead>
-                    <tr>
-                      <th>Produto</th>
-                      <th className="text-right">Preço</th>
-                      <th className="text-right">Cliques</th>
-                      <th className="text-right">CVR</th>
-                      <th className="text-right">Comissão</th>
-                      <th />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {stats.map(({ product, clicks, cvr, commission }) => (
-                      <tr key={product.id} id={`product-${product.id}`}>
-                        <td>
-                          <Link href={`/admin/produtos/${product.id}`} className="group block">
-                            <span className="flex items-center gap-2">
-                              <span className="max-w-[200px] truncate text-[13px] font-medium text-white group-hover:text-brand-300 sm:max-w-[280px]">
-                                {product.name}
-                              </span>
-                              {product.status !== 'ativo' && (
-                                <span className="badge bg-white/[0.06] text-white/40 ring-white/10">
-                                  {product.status}
-                                </span>
-                              )}
-                            </span>
-                            <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                              <span className={`badge ${PLATFORM_COLOR[product.platform]}`}>
-                                {PLATFORM_LABEL[product.platform]}
-                              </span>
-                              <span className="text-[11px] text-white/35">{product.category}</span>
-                              <span className="text-[11px] text-white/25">· /r/{product.slug}</span>
-                            </span>
-                          </Link>
-                        </td>
-                        <td className="whitespace-nowrap text-right text-white/70">{brl(product.price)}</td>
-                        <td className="text-right text-white/70">{num(clicks)}</td>
-                        <td className="text-right text-white/70">{pct(cvr)}</td>
-                        <td className="whitespace-nowrap text-right font-semibold text-lime-300">
-                          {brl(commission)}
-                        </td>
-                        <td className="w-[1%] whitespace-nowrap text-right">
-                          <ProductRowActions
-                            id={product.id}
-                            status={product.status}
-                            appUrl={base}
-                            slug={product.slug}
-                          />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+              <ProductTable
+                appUrl={base}
+                rows={stats.map<ProductRow>(({ product, clicks, cvr, commission }) => ({
+                  id: product.id,
+                  name: product.name,
+                  slug: product.slug,
+                  platform: product.platform,
+                  category: product.category,
+                  status: product.status,
+                  price: product.price,
+                  clicks,
+                  cvr,
+                  commission,
+                }))}
+              />
             )}
           </SectionCard>
         </div>

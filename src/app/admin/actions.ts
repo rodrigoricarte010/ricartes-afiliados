@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { repo } from '@/lib/db';
 import { isAuthenticated, login, logout } from '@/lib/auth';
 import { parseMoney, slugify } from '@/lib/format';
+import { parseProductList } from '@/lib/affiliate';
 import { generateForProduct, type ContentAudience, type ContentFormat, type ContentTone } from '@/lib/content-engine';
 import type {
   ContentPost,
@@ -119,6 +120,60 @@ export async function toggleProductAction(_prev: ActionState, formData: FormData
   await repo.toggleProductStatus(id);
   revalidateAll();
   return { ok: true, message: 'Status do produto atualizado.' };
+}
+
+/**
+ * Importa vários produtos de uma vez a partir de uma lista colada
+ * (uma linha por produto, campos em qualquer ordem).
+ */
+export async function importProductsAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await guard();
+
+  const text = String(formData.get('lista') ?? '');
+  if (text.trim().length < 5) {
+    return { ok: false, message: 'Cole pelo menos uma linha com o link de afiliado.' };
+  }
+
+  const { products, issues } = parseProductList(text);
+  if (!products.length) {
+    return { ok: false, message: 'Não encontrei nenhum link válido na lista colada.' };
+  }
+
+  const db = await repo.snapshot();
+  const taken = new Set(db.products.map((p) => p.slug));
+  const MAX = 200;
+
+  const inputs = products.slice(0, MAX).map((p) => {
+    const base = slugify(p.name) || 'produto';
+    let slug = base;
+    let n = 2;
+    while (taken.has(slug)) {
+      slug = `${base}-${n}`;
+      n += 1;
+    }
+    taken.add(slug);
+
+    return {
+      slug,
+      name: p.name,
+      platform: p.platform,
+      category: p.category,
+      price: p.price,
+      commission_pct: p.commission_pct,
+      affiliate_url: p.affiliate_url,
+      status: 'ativo' as const,
+    };
+  });
+
+  const saved = await repo.saveProducts(inputs);
+
+  revalidateAll();
+
+  const parts = [`${saved.length} ${saved.length === 1 ? 'produto importado' : 'produtos importados'}`];
+  if (issues.length) parts.push(`${issues.length} ${issues.length === 1 ? 'linha ignorada' : 'linhas ignoradas'}`);
+  if (products.length > MAX) parts.push(`limite de ${MAX} por vez`);
+
+  return { ok: true, message: parts.join(' · ') };
 }
 
 // ---------------------------------------------------------------------------
