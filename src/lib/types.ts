@@ -188,3 +188,12 @@ export const CONTENT_STATUS_COLOR: Record<ContentStatus, string> = {
   gravado: 'bg-violet-500/15 text-violet-300 ring-violet-500/30',
   publicado: 'bg-lime-500/15 text-lime-300 ring-lime-500/30',
 };
+
+/** Tabelas persistidas no banco (chaves de Database, exceto settings). */
+export type TableName =
+  | 'products'
+  | 'clicks'
+  | 'conversions'
+  | 'content_posts'
+  | 'infoproducts'
+  | 'orders';

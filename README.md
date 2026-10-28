@@ -94,7 +94,8 @@ Copie `.env.example` para `.env.local` (ou `.env`) e ajuste:
 | `APP_PASSWORD` | sim (produção) | senha do painel. Padrão `ricartes` |
 | `AUTH_SECRET` | sim (produção) | segredo HMAC do cookie de sessão. Gere algo aleatório e longo |
 | `NEXT_PUBLIC_APP_URL` | recomendado | URL pública usada nos links rastreáveis. Se vazio, é derivada do host da requisição |
-| `DB_DRIVER` | não | `file` (padrão) ou `supabase` |
+| `DB_DRIVER` | não | `file` (padrão), `postgres` ou `supabase` |
+| `DATABASE_URL` | com `postgres` | connection string do Postgres (Neon, Railway, Supabase, local) |
 | `NEXT_PUBLIC_SUPABASE_URL` | com `supabase` | URL do projeto |
 | `SUPABASE_SERVICE_ROLE_KEY` | com `supabase` | service role key — **somente no servidor** |
 
@@ -106,7 +107,20 @@ Copie `.env.example` para `.env.local` (ou `.env`) e ajuste:
 Grava em `.data/db.json` (ignorado pelo git). Ótimo para testar. Em serverless (Vercel) o disco é efêmero —
 **use Supabase em produção**.
 
-### Supabase (produção)
+### Qualquer Postgres (recomendado: Neon) — mais simples
+1. Crie um banco grátis em [neon.tech](https://neon.tech) (ou Railway, Render, Supabase pela aba *Connect*).
+2. Copie a connection string (`postgresql://...?sslmode=require`).
+3. Defina `DB_DRIVER=postgres` e `DATABASE_URL=...`.
+4. Pronto: **as tabelas são criadas automaticamente** no primeiro acesso, sem rodar SQL.
+
+Funciona com qualquer Postgres 13+ (inclusive local). Se você definir só `DATABASE_URL`, o driver `postgres` é
+ativado automaticamente. O driver é testado com um Postgres em memória:
+
+```bash
+npm run test:db
+```
+
+### Supabase (via API)
 1. Crie um projeto em [supabase.com/dashboard](https://supabase.com/dashboard) — o plano gratuito limita a
    quantidade de projetos ativos por organização; se o limite estiver atingido, pause/remova um projeto antigo ou
    faça upgrade.
@@ -115,6 +129,10 @@ Grava em `.data/db.json` (ignorado pelo git). Ótimo para testar. Em serverless 
 4. Defina `DB_DRIVER=supabase` e as duas variáveis no ambiente (Vercel → Settings → Environment Variables).
 5. Redeploy. No primeiro acesso a aplicação semeia os dados de demonstração — apague-os em Configurações se quiser
    começar do zero.
+
+> Observação: o driver `supabase` usa a API REST (PostgREST) e exige o schema criado manualmente. O driver
+> `postgres` conecta direto no banco, cria as tabelas sozinho e é o caminho mais rápido — inclusive se você usar o
+> próprio Supabase apenas como Postgres (Project Settings → Database → Connection string).
 
 A aplicação acessa o Postgres **apenas pelo servidor** com a service role key. RLS fica ligado e sem policies
 públicas; a `anon key` não consegue escrever nada.
@@ -156,14 +174,17 @@ src/
 ├── components/                   UI, gráficos SVG, sidebar, toasts
 └── lib/
     ├── types.ts                  modelo de domínio
-    ├── db.ts                     drivers file / supabase + repositório
+    ├── db.ts                     repositório + escolha do driver
+    ├── db-pg.ts                  driver Postgres genérico (cria tabelas sozinho)
+    ├── db-normalize.ts           normalização do formato do banco
     ├── seed.ts                   dados de demonstração
     ├── stats.ts                  métricas e séries
     ├── content-engine.ts         gerador de ganchos/roteiros
     ├── auth.ts                   sessão HMAC via cookie
     ├── format.ts                 formatação pt-BR
     └── url.ts                    URL pública
-supabase/schema.sql               schema completo do Postgres
+supabase/schema.sql               schema para o driver supabase (PostgREST)
+scripts/test-postgres.ts          teste de integração do driver Postgres
 ```
 
 ## Decisões técnicas

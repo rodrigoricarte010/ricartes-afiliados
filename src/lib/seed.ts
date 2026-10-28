@@ -12,7 +12,7 @@ import type {
   Order,
   Product,
   Settings,
-} from '@/lib/types';
+} from './types';
 import { slugify } from './format';
 import { generateForProduct, type ContentFormat } from './content-engine';
 

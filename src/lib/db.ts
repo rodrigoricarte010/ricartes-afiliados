@@ -19,16 +19,14 @@ import type {
   Order,
   Product,
   Settings,
+  TableName,
 } from './types';
 import { buildDemoDatabase, DEMO_SETTINGS } from './seed';
+import { PostgresStore } from './db-pg';
+import { normalizeDatabase } from './db-normalize';
 
-export type TableName =
-  | 'products'
-  | 'clicks'
-  | 'conversions'
-  | 'content_posts'
-  | 'infoproducts'
-  | 'orders';
+export type { TableName } from './types';
+export { normalizeDatabase } from './db-normalize';
 
 export interface Store {
   load(): Promise<Database>;
@@ -74,17 +72,6 @@ class FileStore implements Store {
   }
 }
 
-export function normalizeDatabase(partial: Partial<Database>): Database {
-  return {
-    settings: { ...DEMO_SETTINGS, ...(partial.settings ?? {}) },
-    products: partial.products ?? [],
-    clicks: partial.clicks ?? [],
-    conversions: partial.conversions ?? [],
-    content_posts: partial.content_posts ?? [],
-    infoproducts: partial.infoproducts ?? [],
-    orders: partial.orders ?? [],
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Driver: Supabase (Postgres)
@@ -196,14 +183,68 @@ class SupabaseStore implements Store {
 // Repositório (API usada pela aplicação)
 // ---------------------------------------------------------------------------
 
-function driverName(): 'file' | 'supabase' {
-  return process.env.DB_DRIVER === 'supabase' ? 'supabase' : 'file';
+function driverName(): 'file' | 'supabase' | 'postgres' {
+  const configured = (process.env.DB_DRIVER ?? '').toLowerCase();
+  if (configured === 'supabase') return 'supabase';
+  if (configured === 'postgres' || configured === 'pg' || configured === 'neon') return 'postgres';
+  // Se apenas DATABASE_URL foi definida, assume Postgres genérico.
+  if (process.env.DATABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL) return 'postgres';
+  return 'file';
+}
+
+// ---------------------------------------------------------------------------
+// Driver: Postgres genérico (Neon, Railway, Supabase, RDS, local...)
+// ---------------------------------------------------------------------------
+
+let pgQuery: import('./db-pg').PgQueryable['query'] | null = null;
+
+async function getPgQuery(): Promise<import('./db-pg').PgQueryable['query']> {
+  if (pgQuery) return pgQuery;
+
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error('DB_DRIVER=postgres exige a variável DATABASE_URL.');
+  }
+
+  const pg = await import('pg');
+  const needsSsl = /sslmode=require|neon\.tech|supabase\.co|render\.com|railway|aws|azure/i.test(
+    connectionString,
+  );
+
+  const pool = new pg.Pool({
+    connectionString,
+    max: 3,
+    idleTimeoutMillis: 10_000,
+    ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+  });
+
+  pgQuery = async (text, params) => {
+    const result = await pool.query(text, params as unknown[]);
+    return { rows: result.rows as Record<string, unknown>[] };
+  };
+  return pgQuery;
+}
+
+function createPostgresStore(): Store {
+  const store = new PostgresStore({
+    // Repassa a chamada para o pool, resolvido sob demanda.
+    query: (text, params) => getPgQuery().then((query) => query(text, params)),
+    normalize: normalizeDatabase,
+    seed: buildDemoDatabase,
+  });
+  return store as unknown as Store;
 }
 
 let storeSingleton: Store | null = null;
 function store(): Store {
   if (!storeSingleton) {
-    storeSingleton = driverName() === 'supabase' ? new SupabaseStore() : new FileStore();
+    const driver = driverName();
+    storeSingleton =
+      driver === 'supabase'
+        ? new SupabaseStore()
+        : driver === 'postgres'
+          ? createPostgresStore()
+          : new FileStore();
   }
   return storeSingleton;
 }

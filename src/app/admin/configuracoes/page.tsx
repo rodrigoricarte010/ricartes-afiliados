@@ -10,9 +10,15 @@ import { resetDemoAction } from '../actions';
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configurações' };
 
-const ENV_SNIPPET = `DB_DRIVER=supabase
-NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
+const ENV_SNIPPET = `# Opção A — qualquer Postgres (Neon, Railway, Supabase...)
+DB_DRIVER=postgres
+DATABASE_URL=postgresql://usuario:senha@host/banco?sslmode=require
+
+# Opção B — Supabase via API
+# DB_DRIVER=supabase
+# NEXT_PUBLIC_SUPABASE_URL=https://SEU-PROJETO.supabase.co
+# SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
+
 APP_PASSWORD=uma-senha-forte
 AUTH_SECRET=um-segredo-aleatorio-bem-longo
 NEXT_PUBLIC_APP_URL=https://seu-dominio.com`;
@@ -40,12 +46,16 @@ export default async function SettingsPage() {
               <span className="text-xs text-white/45">Driver ativo</span>
               <span
                 className={`badge ${
-                  driver === 'supabase'
-                    ? 'bg-lime-500/15 text-lime-300 ring-lime-500/25'
-                    : 'bg-amber-500/15 text-amber-300 ring-amber-500/25'
+                  driver === 'file'
+                    ? 'bg-amber-500/15 text-amber-300 ring-amber-500/25'
+                    : 'bg-lime-500/15 text-lime-300 ring-lime-500/25'
                 }`}
               >
-                {driver === 'supabase' ? 'Supabase (nuvem)' : 'Arquivo local'}
+                {driver === 'supabase'
+                  ? 'Supabase (nuvem)'
+                  : driver === 'postgres'
+                    ? 'Postgres (nuvem)'
+                    : 'Arquivo local'}
               </span>
             </div>
 
@@ -54,7 +64,7 @@ export default async function SettingsPage() {
                 <p className="font-semibold">Modo demonstração</p>
                 <p className="mt-1 text-xs leading-snug text-amber-100/70">
                   Os dados ficam em <code className="rounded bg-black/30 px-1">.data/db.json</code> na máquina. Na
-                  Vercel o armazenamento local é temporário — configure o Supabase abaixo para persistir de verdade.
+                  Vercel o armazenamento local é temporário — configure um Postgres abaixo para persistir de verdade.
                 </p>
               </Alert>
             ) : (
@@ -64,20 +74,26 @@ export default async function SettingsPage() {
             )}
 
             <div className="mt-4 space-y-2 text-[11.5px] leading-relaxed text-white/45">
-              <p className="font-semibold text-white/70">Como conectar o Supabase</p>
+              <p className="font-semibold text-white/70">Como conectar um banco na nuvem</p>
               <ol className="list-inside list-decimal space-y-1">
                 <li>
-                  Crie um projeto em{' '}
-                  <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="text-brand-300 hover:underline">
-                    supabase.com/dashboard
-                  </a>
+                  <b className="text-white/80">Mais simples:</b> crie um Postgres grátis no{' '}
+                  <a href="https://neon.tech" target="_blank" rel="noreferrer" className="text-brand-300 hover:underline">
+                    neon.tech
+                  </a>{' '}
+                  e copie a connection string.
                 </li>
                 <li>
-                  Rode o SQL de <code className="rounded bg-white/10 px-1">supabase/schema.sql</code> no SQL Editor (cria
-                  as tabelas).
+                  Preencha <code className="rounded bg-white/10 px-1">DATABASE_URL</code> e{' '}
+                  <code className="rounded bg-white/10 px-1">DB_DRIVER=postgres</code>.
                 </li>
-                <li>Copie a URL e a service role key em Project Settings → API.</li>
-                <li>Adicione as variáveis abaixo na Vercel (ou no .env local).</li>
+                <li>
+                  As tabelas são criadas automaticamente no primeiro acesso — não precisa rodar SQL nenhum.
+                </li>
+                <li>
+                  Também funciona com Supabase (via API), Railway, Render e Postgres local. No Supabase via API, rode{' '}
+                  <code className="rounded bg-white/10 px-1">supabase/schema.sql</code> antes.
+                </li>
               </ol>
             </div>
 

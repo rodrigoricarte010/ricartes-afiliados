@@ -33,8 +33,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <div className="mb-5 flex flex-wrap items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-500/[0.07] px-4 py-2.5 text-xs text-amber-100/90">
               <span className="font-semibold">Modo demonstração</span>
               <span className="text-amber-100/60">
-                Os dados estão em <code className="rounded bg-black/30 px-1">.data/db.json</code>. Conecte o Supabase
-                para persistir na nuvem.
+                Os dados estão em <code className="rounded bg-black/30 px-1">.data/db.json</code>. Conecte um Postgres
+                (Neon, Supabase, Railway) para persistir na nuvem.
               </span>
               <a href="/admin/configuracoes" className="ml-auto font-semibold text-amber-200 underline-offset-2 hover:underline">
                 Configurar →
