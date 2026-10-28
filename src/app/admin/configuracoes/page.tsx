@@ -7,6 +7,7 @@ import { SettingsForm } from './SettingsForm';
 import { BackupCard } from './BackupCard';
 import { resetDemoAction } from '../actions';
 import { ClearDataCard } from './ClearDataCard';
+import { RestoreDemoButton } from './RestoreDemoButton';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configurações' };
@@ -62,7 +63,7 @@ export default async function SettingsPage() {
 
             {driver === 'file' ? (
               <Alert tone="warn">
-                <p className="font-semibold">Modo demonstração</p>
+                <p className="font-semibold">Arquivo local</p>
                 <p className="mt-1 text-xs leading-snug text-amber-100/70">
                   Os dados ficam em <code className="rounded bg-black/30 px-1">.data/db.json</code> na máquina. Na
                   Vercel o armazenamento local é temporário — configure um Postgres abaixo para persistir de verdade.
@@ -70,7 +71,10 @@ export default async function SettingsPage() {
               </Alert>
             ) : (
               <Alert tone="success">
-                <p className="text-xs">Conectado ao Supabase. Todos os dados são gravados no Postgres.</p>
+                <p className="text-xs">
+                  Conectado ao {driver === 'supabase' ? 'Supabase' : 'Postgres'}. Todos os dados são gravados no banco
+                  na nuvem e sobrevivem a novos deploys.
+                </p>
               </Alert>
             )}
 
@@ -190,12 +194,7 @@ export default async function SettingsPage() {
               você cadastrou será apagado.
             </p>
             <form action={resetDemoAction}>
-              <button
-                type="submit"
-                className="btn w-full border border-amber-500/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20"
-              >
-                ↺ Restaurar demonstração
-              </button>
+              <RestoreDemoButton />
             </form>
           </SectionCard>
 
