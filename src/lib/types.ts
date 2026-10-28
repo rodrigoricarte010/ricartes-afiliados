@@ -142,6 +142,11 @@ export interface Settings {
   /** Comissão média usada nas estimativas quando o produto não informa. */
   default_commission_pct: number;
   /**
+   * Quanto você quer faturar por mês (R$), somando comissões aprovadas e
+   * vendas de infoprodutos. `0` = sem meta definida.
+   */
+  monthly_goal: number;
+  /**
    * `true` enquanto o banco contém os dados de exemplo criados na primeira
    * execução. Vira `false` quando o usuário limpa tudo e começa do zero.
    */

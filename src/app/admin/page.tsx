@@ -1,10 +1,12 @@
 import Link from 'next/link';
 import { repo } from '@/lib/db';
-import { dashboardStats } from '@/lib/stats';
+import { dashboardStats, goalProgress, monthStats } from '@/lib/stats';
 import { brl, num, pct, relativeTime, dateShort } from '@/lib/format';
 import { AreaChart, BarsChart, Donut, ProgressBar } from '@/components/charts';
 import { PageHeader, StatCard, SectionCard, EmptyState } from '@/components/ui';
 import { PLATFORM_COLOR, PLATFORM_LABEL } from '@/lib/types';
+import { GoalCard } from './GoalCard';
+import { LiveRefresh } from './LiveRefresh';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Visão geral' };
@@ -12,6 +14,8 @@ export const metadata = { title: 'Visão geral' };
 export default async function DashboardPage() {
   const db = await repo.snapshot();
   const s = dashboardStats(db, 30);
+  const month = monthStats(db);
+  const goal = goalProgress(month, db.settings.monthly_goal ?? 0);
 
   const clicksTrend = s.clicksPrev7d > 0 ? ((s.clicks7d - s.clicksPrev7d) / s.clicksPrev7d) * 100 : 0;
   const settings = db.settings;
@@ -98,6 +102,10 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      <div className="mb-2 flex justify-end">
+        <LiveRefresh />
+      </div>
+
       <PageHeader
         title={`Olá, ${settings.display_name || 'afiliado'} 👋`}
         description="Aqui está o resumo dos seus últimos 30 dias como afiliado e produtor."
@@ -146,6 +154,10 @@ export default async function DashboardPage() {
           icon="⏳"
           href="/admin/vendas"
         />
+      </div>
+
+      <div className="mt-4">
+        <GoalCard month={month} goal={goal} isDemo={isDemo} />
       </div>
 
       {/* Gráficos principais */}

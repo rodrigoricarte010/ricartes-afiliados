@@ -31,7 +31,11 @@ export function ClearDataCard({ produtoCount, cliqueCount }: { produtoCount: num
       <p className="mb-3 text-[11px] leading-snug text-white/45">
         Remove <strong className="text-white/70">{produtoCount} produtos</strong>,{' '}
         <strong className="text-white/70">{cliqueCount} cliques</strong>, comissões, roteiros, infoprodutos e pedidos —
-        e zera o perfil (nome, bio, Pix, WhatsApp). Não dá para desfazer: baixe o backup antes.
+        e zera o perfil (nome, bio, Pix, WhatsApp). Não dá para desfazer:{' '}
+        <a href="/api/backup" className="font-semibold text-brand-300 underline-offset-2 hover:underline">
+          baixe o backup antes
+        </a>
+        .
       </p>
 
       <form action={formAction} className="space-y-2">

@@ -56,6 +56,7 @@ export const EMPTY_SETTINGS: Settings = {
   whatsapp: '',
   support_email: '',
   default_commission_pct: 12,
+  monthly_goal: 0,
   is_demo: false,
   affiliate_programs: (['shopee', 'tiktok', 'mercadolivre', 'amazon', 'hotmart', 'kiwify'] as const).map(
     (platform) => ({ platform, status: 'nao_iniciado' as const, note: '' }),
@@ -71,6 +72,7 @@ export const DEMO_SETTINGS: Settings = {
   whatsapp: '5585999999999',
   support_email: 'contato@ricartes.com',
   default_commission_pct: 12,
+  monthly_goal: 500,
   affiliate_programs: [
     { platform: 'shopee', status: 'conectado', note: 'Programa de Afiliados Shopee aprovado' },
     { platform: 'tiktok', status: 'pendente', note: 'Aguardando aprovação do TikTok Shop' },

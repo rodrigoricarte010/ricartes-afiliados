@@ -72,6 +72,22 @@ export function SettingsForm({ settings }: { settings: Settings }) {
             className="input"
           />
         </div>
+        <div>
+          <label htmlFor="monthly_goal" className="label">
+            Meta de faturamento do mês (R$)
+          </label>
+          <input
+            id="monthly_goal"
+            name="monthly_goal"
+            inputMode="decimal"
+            placeholder="500"
+            defaultValue={settings.monthly_goal ? settings.monthly_goal : ''}
+            className="input"
+          />
+          <p className="mt-1 text-[10px] leading-snug text-white/30">
+            Use vírgula para centavos (1.250,00). Em branco ou 0 esconde a meta.
+          </p>
+        </div>
       </div>
 
       <div className="border-t border-white/[0.07] pt-5">

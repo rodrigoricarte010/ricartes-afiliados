@@ -6,6 +6,7 @@ import { appUrl } from '@/lib/url';
 import { PageHeader, EmptyState, SectionCard } from '@/components/ui';
 import { ProductForm } from './ProductForm';
 import { ProductTable, type ProductRow } from './ProductTable';
+import { CatalogMomentum } from './CatalogMomentum';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Produtos afiliados' };
@@ -28,6 +29,9 @@ export default async function ProductsPage() {
             <Link href="/admin/produtos/importar" className="btn-ghost btn-sm sm:text-sm">
               ⇪ Importar lista
             </Link>
+            <a href="/api/export?tipo=produtos" className="btn-ghost btn-sm sm:text-sm">
+              ⤓ CSV
+            </a>
             <Link href="/admin/links" className="btn-ghost btn-sm sm:text-sm">
               ⇄ Links & QR
             </Link>
@@ -54,6 +58,8 @@ export default async function ProductsPage() {
               <p className="text-[11px] text-white/40">aprovada</p>
             </div>
           </div>
+
+          <CatalogMomentum db={db} />
 
           <SectionCard title="Seu catálogo" subtitle="Clique no nome para editar" padded={false}>
             {stats.length === 0 ? (

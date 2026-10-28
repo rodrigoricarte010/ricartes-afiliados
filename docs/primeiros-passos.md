@@ -37,13 +37,21 @@ do projeto na Vercel. Para trocar, siga o passo a passo mais abaixo.
 
 ## Limpar os dados de demonstração
 
-Painel → **Configurações** → *Dados de demonstração*:
+Enquanto o banco tiver os exemplos, o topo do painel mostra uma faixa âmbar avisando que os
+números não são reais.
 
-- **Restaurar demonstração**: recria o conjunto de exemplo (útil depois de mexer demais).
-- Para começar do zero: apague os produtos/infoprodutos pelo próprio painel e deixe o banco vazio.
-  O semeador só roda quando o banco está vazio, então nada volta sem você pedir.
+Painel → **Configurações** → *Dados de demonstração · apagar*:
 
-Antes de apagar, use **Configurações → Backup** para baixar um JSON com tudo.
+1. Clique em **⤓ Baixar backup** e guarde o JSON (opcional, mas recomendado).
+2. Digite `LIMPAR` no campo de confirmação.
+3. Clique em **🗑 Apagar todos os dados**.
+
+Isso zera produtos, cliques, comissões, roteiros, infoprodutos e pedidos, e deixa o perfil vazio
+(sem Pix/WhatsApp de exemplo). A linha de configuração continua existindo, então o semeador
+automático **não devolve os exemplos** depois da limpeza.
+
+Para trazer os exemplos de volta algum dia: **Restaurar demonstração** (pede confirmação, porque
+apaga tudo o que você cadastrou).
 
 ## Rotina de uso
 
@@ -61,7 +69,14 @@ Antes de apagar, use **Configurações → Backup** para baixar um JSON com tudo
    legenda e hashtags, e guarda no calendário de produção.
 4. **Vendas**: registre a comissão quando ela aparecer no painel da Shopee/TikTok Shop e
    marque como aprovada quando cair. O dashboard usa exatamente esses registros.
-5. **Infoprodutos**: edite a página de vendas, preço, bônus e garantia. Os pedidos aparecem em Vendas.
+   - **⤓ Vendas CSV / ⤓ Pedidos CSV** exportam os lançamentos (abre direto no Excel, com `;` e vírgula decimal).
+5. **Meta**: em Configurações, preencha *Meta de faturamento do mês*. O cartão do topo do painel mostra
+   o que já entrou (comissões aprovadas + pedidos pagos), o que falta, a projeção no ritmo atual e
+   quanto você precisa fazer por dia. Deixe `0` ou vazio para esconder a meta.
+6. **Infoprodutos**: edite a página de vendas, preço, bônus e garantia. Os pedidos aparecem em Vendas.
+
+> **Atualizar os números**: no topo do painel tem `↻ Atualizar` e o botão `○ ao vivo`. Com o modo ao vivo
+> ligado, o painel rebusca os dados a cada 30 segundos (só com a aba visível) — útil enquanto você divulga.
 
 ## Se algo quebrar
 

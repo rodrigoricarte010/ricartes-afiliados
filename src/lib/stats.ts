@@ -58,40 +58,71 @@ export interface DashboardStats {
 
 import type { Order } from './types';
 
-function withinDays(iso: string, days: number): boolean {
-  const t = new Date(iso).getTime();
-  if (Number.isNaN(t)) return false;
-  const diff = Date.now() - t;
-  // Ignora datas no futuro (relógio errado, importação): métrica honesta.
-  return diff >= 0 && diff <= days * 86400000;
+interface ProductAgg {
+  clicks: number;
+  clicks7d: number;
+  conversions: number;
+  approved: number;
+  pending: number;
+  revenue: number;
+  commission: number;
 }
 
+/**
+ * Agrega cliques/conversões por produto em uma única passada.
+ * A versão anterior filtrava o array inteiro para cada produto (O(P×C)), o que
+ * ficava lento assim que o histórico de cliques cresce.
+ */
 export function productStats(db: Database): ProductStats[] {
   const now = Date.now();
   const now7 = now - 7 * 86400000;
+  const empty = (): ProductAgg => ({
+    clicks: 0,
+    clicks7d: 0,
+    conversions: 0,
+    approved: 0,
+    pending: 0,
+    revenue: 0,
+    commission: 0,
+  });
+
+  const agg = new Map<string, ProductAgg>();
+
+  for (const click of db.clicks) {
+    const entry = agg.get(click.product_id) ?? empty();
+    entry.clicks += 1;
+    const t = new Date(click.ts).getTime();
+    if (t >= now7 && t <= now) entry.clicks7d += 1;
+    agg.set(click.product_id, entry);
+  }
+
+  for (const conv of db.conversions) {
+    const entry = agg.get(conv.product_id) ?? empty();
+    entry.conversions += 1;
+    if (conv.status === 'aprovada') {
+      entry.approved += 1;
+      entry.revenue += conv.amount;
+      entry.commission += conv.commission;
+    } else if (conv.status === 'pendente') {
+      entry.pending += 1;
+    }
+    agg.set(conv.product_id, entry);
+  }
+
   return db.products
     .map((product) => {
-      const clicks = db.clicks.filter((c) => c.product_id === product.id);
-      const clicks7d = clicks.filter((c) => {
-        const t = new Date(c.ts).getTime();
-        return t >= now7 && t <= now;
-      }).length;
-      const convs = db.conversions.filter((c) => c.product_id === product.id);
-      const approved = convs.filter((c) => c.status === 'aprovada');
-      const pending = convs.filter((c) => c.status === 'pendente');
-      const commission = approved.reduce((a, c) => a + c.commission, 0);
-      const revenue = approved.reduce((a, c) => a + c.amount, 0);
+      const a = agg.get(product.id) ?? empty();
       return {
         product,
-        clicks: clicks.length,
-        clicks7d,
-        conversions: convs.length,
-        approved: approved.length,
-        pending: pending.length,
-        revenue,
-        commission,
-        cvr: clicks.length ? (convs.length / clicks.length) * 100 : 0,
-        epc: clicks.length ? commission / clicks.length : 0,
+        clicks: a.clicks,
+        clicks7d: a.clicks7d,
+        conversions: a.conversions,
+        approved: a.approved,
+        pending: a.pending,
+        revenue: a.revenue,
+        commission: a.commission,
+        cvr: a.clicks ? (a.conversions / a.clicks) * 100 : 0,
+        epc: a.clicks ? a.commission / a.clicks : 0,
       };
     })
     .sort((a, b) => b.commission - a.commission);
@@ -104,11 +135,17 @@ export function dashboardStats(db: Database, days = 30): DashboardStats {
   const approved = db.conversions.filter((c) => c.status === 'aprovada');
   const pending = db.conversions.filter((c) => c.status === 'pendente');
 
-  const clicks7d = db.clicks.filter((c) => withinDays(c.ts, 7)).length;
-  const clicksPrev7d = db.clicks.filter((c) => {
+  // Janelas de 7 e 14 dias calculadas uma vez só (evita duas varreduras).
+  const nowTs = Date.now();
+  let clicks7d = 0;
+  let clicksPrev7d = 0;
+  for (const c of db.clicks) {
     const t = new Date(c.ts).getTime();
-    return t < Date.now() - 7 * 86400000 && t >= Date.now() - 14 * 86400000;
-  }).length;
+    if (Number.isNaN(t)) continue;
+    const age = nowTs - t;
+    if (age >= 0 && age <= 7 * 86400000) clicks7d += 1;
+    else if (age > 7 * 86400000 && age <= 14 * 86400000) clicksPrev7d += 1;
+  }
 
   const commissionApproved = approved.reduce((a, c) => a + c.commission, 0);
   const commissionPending = pending.reduce((a, c) => a + c.commission, 0);
@@ -144,12 +181,40 @@ export function dashboardStats(db: Database, days = 30): DashboardStats {
     return entry;
   };
   for (const c of db.clicks) bump(c.source || 'direto').clicks += 1;
-  for (const c of approved) {
-    const click = db.clicks.find((k) => k.product_id === c.product_id && k.ts <= c.created_at);
-    const source = click?.source || 'direto';
-    const entry = bump(source);
+
+  // Atribuição por "último clique antes da venda" (mesma regra das plataformas),
+  // com os cliques agrupados por produto e ordenados — antes era um `find`
+  // dentro do laço de vendas (O(C×V)).
+  const clicksByProduct = new Map<string, ClickEvent[]>();
+  for (const click of db.clicks) {
+    const list = clicksByProduct.get(click.product_id);
+    if (list) list.push(click);
+    else clicksByProduct.set(click.product_id, [click]);
+  }
+  for (const list of clicksByProduct.values()) {
+    list.sort((a, b) => new Date(a.ts).getTime() - new Date(b.ts).getTime());
+  }
+
+  for (const conv of approved) {
+    const list = clicksByProduct.get(conv.product_id) ?? [];
+    const when = new Date(conv.created_at).getTime();
+    let match: ClickEvent | undefined;
+    // Busca binária no maior clique <= data da venda.
+    let lo = 0;
+    let hi = list.length - 1;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const t = new Date(list[mid]!.ts).getTime();
+      if (t <= when) {
+        match = list[mid];
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    const entry = bump(match?.source || 'direto');
     entry.conversions += 1;
-    entry.commission += c.commission;
+    entry.commission += conv.commission;
   }
   const totalClicks = db.clicks.length || 1;
   const bySource: SourceStats[] = [...sourceMap.entries()]
@@ -171,7 +236,6 @@ export function dashboardStats(db: Database, days = 30): DashboardStats {
 
   // horários
   const hourly = Array.from({ length: 24 }, (_, hour) => ({ hour, clicks: 0 }));
-  const nowTs = Date.now();
   for (const c of db.clicks) {
     const t = new Date(c.ts).getTime();
     if (Number.isNaN(t) || t > nowTs) continue; // ignora eventos no futuro
@@ -213,5 +277,149 @@ export function dashboardStats(db: Database, days = 30): DashboardStats {
     ordersPaid: ordersPaid.length,
     ordersRevenue: ordersPaid.reduce((a, o) => a + o.amount, 0),
     monthlyRecurring: 0,
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Mês corrente e meta
+// ---------------------------------------------------------------------------
+
+export interface MonthStats {
+  /** "2026-10" */
+  key: string;
+  /** "outubro de 2026" */
+  label: string;
+  /** "outubro" */
+  shortLabel: string;
+  monthName: string;
+  year: number;
+  /** Comissões aprovadas no mês. */
+  commission: number;
+  /** Pedidos pagos de infoprodutos no mês. */
+  ordersRevenue: number;
+  /** comissão + infoprodutos */
+  total: number;
+  clicks: number;
+  conversions: number;
+  ordersPaid: number;
+  prevLabel: string;
+  prevTotal: number;
+  prevCommission: number;
+  prevOrdersRevenue: number;
+  /** Dia do mês (1–31) no fuso do painel. */
+  day: number;
+  daysInMonth: number;
+}
+
+function monthName(year: number, month: number): string {
+  return new Intl.DateTimeFormat('pt-BR', { month: 'long', timeZone: 'UTC' }).format(
+    new Date(Date.UTC(year, month - 1, 15)),
+  );
+}
+
+/** Soma comissões aprovadas, pedidos pagos e cliques de um mês (YYYY-MM). */
+export function monthStats(db: Database, reference: Date = new Date()): MonthStats {
+  const today = dayKey(reference) || dayKey(new Date());
+  const year = Number(today.slice(0, 4));
+  const month = Number(today.slice(5, 7));
+  const day = Number(today.slice(8, 10));
+  const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const key = `${year}-${String(month).padStart(2, '0')}`;
+
+  const prevDate = new Date(Date.UTC(year, month - 2, 15));
+  const prevKey = `${prevDate.getUTCFullYear()}-${String(prevDate.getUTCMonth() + 1).padStart(2, '0')}`;
+
+  const inMonth = (iso: string, prefix: string) => dayKey(iso).startsWith(prefix);
+
+  let commission = 0;
+  let conversions = 0;
+  let prevCommission = 0;
+  for (const c of db.conversions) {
+    if (c.status !== 'aprovada') continue;
+    if (inMonth(c.created_at, key)) {
+      commission += c.commission;
+      conversions += 1;
+    } else if (inMonth(c.created_at, prevKey)) {
+      prevCommission += c.commission;
+    }
+  }
+
+  let ordersRevenue = 0;
+  let ordersPaid = 0;
+  let prevOrdersRevenue = 0;
+  for (const o of db.orders) {
+    if (o.status !== 'pago') continue;
+    if (inMonth(o.created_at, key)) {
+      ordersRevenue += o.amount;
+      ordersPaid += 1;
+    } else if (inMonth(o.created_at, prevKey)) {
+      prevOrdersRevenue += o.amount;
+    }
+  }
+
+  const clicks = db.clicks.filter((c) => inMonth(c.ts, key)).length;
+
+  return {
+    key,
+    year,
+    monthName: monthName(year, month),
+    label: `${monthName(year, month)} de ${year}`,
+    shortLabel: monthName(year, month),
+    commission,
+    ordersRevenue,
+    total: commission + ordersRevenue,
+    clicks,
+    conversions,
+    ordersPaid,
+    prevLabel: `${monthName(prevDate.getUTCFullYear(), prevDate.getUTCMonth() + 1)} de ${prevDate.getUTCFullYear()}`,
+    prevTotal: prevCommission + prevOrdersRevenue,
+    prevCommission,
+    prevOrdersRevenue,
+    day,
+    daysInMonth,
+  };
+}
+
+export interface GoalProgress {
+  /** Meta em R$ (0 = nenhuma meta definida). */
+  goal: number;
+  hasGoal: boolean;
+  current: number;
+  remaining: number;
+  /** Percentual atingido (pode passar de 100). */
+  progress: number;
+  /** Projeção linear para o fim do mês, no ritmo atual. */
+  projected: number;
+  averagePerDay: number;
+  /** Quanto precisa fazer por dia (considerando hoje) para bater a meta. */
+  requiredPerDay: number;
+  daysLeft: number;
+  daysElapsed: number;
+  onTrack: boolean;
+  hit: boolean;
+}
+
+export function goalProgress(month: MonthStats, goal: number): GoalProgress {
+  const safeGoal = Number.isFinite(goal) && goal > 0 ? goal : 0;
+  const current = month.total;
+  const daysElapsed = Math.max(1, month.day);
+  const daysLeft = Math.max(1, month.daysInMonth - month.day + 1);
+  const averagePerDay = current / daysElapsed;
+  const projected = averagePerDay * month.daysInMonth;
+  const remaining = Math.max(0, safeGoal - current);
+
+  return {
+    goal: safeGoal,
+    hasGoal: safeGoal > 0,
+    current,
+    remaining,
+    progress: safeGoal > 0 ? (current / safeGoal) * 100 : 0,
+    projected,
+    averagePerDay,
+    requiredPerDay: safeGoal > 0 ? remaining / daysLeft : 0,
+    daysLeft,
+    daysElapsed,
+    onTrack: safeGoal > 0 && projected >= safeGoal,
+    hit: safeGoal > 0 && current >= safeGoal,
   };
 }

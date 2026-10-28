@@ -23,9 +23,14 @@ export default async function LinksPage() {
         title="Links & QR Code"
         description="Seus links rastreáveis prontos para a bio, stories e descrição dos vídeos. Cada acesso é contabilizado."
         action={
-          <Link href="/admin/produtos" className="btn-primary btn-sm sm:text-sm">
-            + Novo produto
-          </Link>
+          <>
+            <a href="/api/export?tipo=cliques" className="btn-ghost btn-sm sm:text-sm">
+              ⤓ Cliques CSV
+            </a>
+            <Link href="/admin/produtos" className="btn-primary btn-sm sm:text-sm">
+              + Novo produto
+            </Link>
+          </>
         }
       />
 

@@ -28,9 +28,17 @@ export default async function SalesPage() {
         title="Vendas & comissões"
         description="Registre as vendas que a plataforma informou, acompanhe o que está pendente e veja os pedidos dos seus infoprodutos."
         action={
-          <Link href="/admin/produtos" className="btn-ghost btn-sm sm:text-sm">
-            ◈ Produtos
-          </Link>
+          <>
+            <a href="/api/export?tipo=vendas" className="btn-ghost btn-sm sm:text-sm" title="Abre no Excel / Sheets">
+              ⤓ Vendas CSV
+            </a>
+            <a href="/api/export?tipo=pedidos" className="btn-ghost btn-sm sm:text-sm" title="Pedidos de infoprodutos">
+              ⤓ Pedidos CSV
+            </a>
+            <Link href="/admin/produtos" className="btn-ghost btn-sm sm:text-sm">
+              ◈ Produtos
+            </Link>
+          </>
         }
       />
 

@@ -370,6 +370,8 @@ export async function saveSettingsAction(_prev: ActionState, formData: FormData)
     whatsapp: str(formData, 'whatsapp'),
     support_email: str(formData, 'support_email'),
     default_commission_pct: number(formData, 'default_commission_pct') || 12,
+    // 0 = sem meta (o campo vazio não pode virar "meta de R$ 0").
+    monthly_goal: Math.max(0, number(formData, 'monthly_goal')),
     affiliate_programs: programs,
   });
 

@@ -20,6 +20,11 @@ vendas prontas.
   geram a URL com `?utm_source=tiktok|instagram|whatsapp|youtube`.
 - **Vendas & comissões** (`/admin/vendas`) — registro manual das vendas informadas pela plataforma, status
   pendente/aprovada/cancelada, ticket médio e pedidos de infoproduto.
+- **Meta do mês** — defina quanto quer faturar em Configurações. O painel mostra o que já entrou (comissões
+  aprovadas + pedidos pagos), quanto falta, a projeção no ritmo atual e quanto precisa por dia para bater a meta.
+- **Exportar em CSV** — vendas, pedidos, cliques e catálogo (`/api/export?tipo=vendas|pedidos|cliques|produtos`),
+  já com `;` e vírgula decimal para abrir direto no Excel pt-BR.
+- **Atualizar ao vivo** — botão de atualização e modo automático (30s) no topo do painel, sem recarregar a página.
 
 ### 2. Estúdio de conteúdo (`/admin/conteudo`)
 Gera, a partir de um produto já cadastrado:
@@ -56,6 +61,8 @@ Aceita `/<handle>` e `/<handle>` com `@` (ex.: `/ricartes` ou `/@ricartes`), al�
 ### 6. Backup dos dados
 - **Baixar backup (JSON)** em Configurações → exporta todo o banco (`/api/backup`, protegido por sessão).
 - **Importar backup** → valida a estrutura antes de gravar e substitui o conteúdo atual.
+- **Apagar todos os dados** → remove a demonstração (produtos, cliques, comissões, roteiros, infoprodutos, pedidos)
+  e zera o perfil. Exige digitar `LIMPAR`; a linha de configuração é mantida, então os exemplos não voltam sozinhos.
 - Essencial enquanto o banco estiver no modo arquivo local, já que o disco da Vercel é temporário.
 
 ### 7. Páginas públicas
@@ -204,6 +211,7 @@ src/
 │   ├── r/[slug]/                 redirecionamento rastreável
 │   ├── api/qr/                   geração de QR
 │   ├── api/health/               diagnóstico do banco em produção
+│   ├── api/export/               exportação em CSV (vendas, pedidos, cliques, produtos)
 │   └── api/backup/               exportação do banco em JSON
 ├── components/                   UI, gráficos SVG, sidebar, toasts
 └── lib/
@@ -219,6 +227,7 @@ src/
     └── url.ts                    URL pública
 supabase/schema.sql               schema para o driver supabase (PostgREST)
 scripts/test-postgres.ts          teste de integração do driver Postgres
+scripts/test-stats.ts             testes das métricas (agregação, atribuição, meta)
 ```
 
 ## Decisões técnicas
