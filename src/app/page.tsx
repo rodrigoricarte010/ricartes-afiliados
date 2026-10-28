@@ -236,9 +236,12 @@ export default async function HomePage() {
           <Link href="/admin" className="btn-primary relative mt-6 px-7 py-3 text-sm shadow-glow">
             Começar agora →
           </Link>
-          <p className="relative mt-3 text-[10px] text-white/25">
-            Demonstração · senha padrão <code className="rounded bg-black/30 px-1 text-white/50">ricartes</code>
-          </p>
+          {process.env.NODE_ENV !== 'production' && (
+            <p className="relative mt-3 text-[10px] text-white/25">
+              Demonstração · senha padrão{' '}
+              <code className="rounded bg-black/30 px-1 text-white/50">ricartes</code>
+            </p>
+          )}
         </div>
       </section>
 
