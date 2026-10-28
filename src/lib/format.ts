@@ -1,5 +1,50 @@
 // Utilitários de formatação (pt-BR)
 
+// ---------------------------------------------------------------------------
+// Fuso horário
+//
+// Na Vercel o servidor roda em UTC, então qualquer data montada com
+// `getHours()`/`getDate()` ficaria 3 horas adiantada em relação ao Brasil
+// (e o dia "vira" às 21h de Brasília). Todo cálculo de data/hora do painel
+// passa por aqui, sempre no fuso de São Paulo.
+// ---------------------------------------------------------------------------
+
+export const APP_TIME_ZONE = 'America/Sao_Paulo';
+
+const appPartsFormatter = new Intl.DateTimeFormat('pt-BR', {
+  timeZone: APP_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  hour12: false,
+});
+
+interface DateParts {
+  year: number;
+  month: number;
+  day: number;
+  hour: number;
+}
+
+function appParts(date: Date): DateParts {
+  const parts = appPartsFormatter.formatToParts(date);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0');
+  return {
+    year: get('year'),
+    month: get('month'),
+    day: get('day'),
+    hour: get('hour') % 24, // alguns ambientes devolvem "24" à meia-noite
+  };
+}
+
+/** Hora cheia (0–23) no fuso do painel. */
+export function hourInAppTz(iso: Date | string): number {
+  const d = typeof iso === 'string' ? new Date(iso) : iso;
+  if (Number.isNaN(d.getTime())) return 0;
+  return appParts(d).hour;
+}
+
 export function brl(value: number, opts: { compact?: boolean } = {}): string {
   if (opts.compact && Math.abs(value) >= 1000) {
     return new Intl.NumberFormat('pt-BR', {
@@ -28,7 +73,7 @@ export function dateShort(iso?: string): string {
   if (!iso) return '—';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', timeZone: APP_TIME_ZONE });
 }
 
 export function dateFull(iso?: string): string {
@@ -39,6 +84,7 @@ export function dateFull(iso?: string): string {
     day: '2-digit',
     month: '2-digit',
     year: 'numeric',
+    timeZone: APP_TIME_ZONE,
   });
 }
 
@@ -51,6 +97,7 @@ export function dateTime(iso?: string): string {
     month: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
+    timeZone: APP_TIME_ZONE,
   });
 }
 
@@ -104,20 +151,19 @@ export function initials(name: string): string {
 
 export function dayKey(d: Date | string): string {
   const date = typeof d === 'string' ? new Date(d) : d;
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+  if (Number.isNaN(date.getTime())) return '';
+  const { year, month, day } = appParts(date);
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 }
 
 /** Lista dos últimos N dias (mais antigo primeiro), como chaves YYYY-MM-DD. */
 export function lastNDays(n: number, from = new Date()): string[] {
   const out: string[] = [];
-  const base = new Date(from);
-  base.setHours(12, 0, 0, 0);
+  const today = appParts(from);
   for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(base);
-    d.setDate(d.getDate() - i);
+    // Meio-dia UTC evita qualquer ambiguidade de fuso ao recuar os dias.
+    const d = new Date(Date.UTC(today.year, today.month - 1, today.day, 12));
+    d.setUTCDate(d.getUTCDate() - i);
     out.push(dayKey(d));
   }
   return out;

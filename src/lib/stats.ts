@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 import type { ClickEvent, Conversion, Database, Product } from './types';
-import { dayKey, lastNDays } from './format';
+import { dayKey, hourInAppTz, lastNDays } from './format';
 
 export interface ProductStats {
   product: Product;
@@ -171,13 +171,16 @@ export function dashboardStats(db: Database, days = 30): DashboardStats {
 
   // horários
   const hourly = Array.from({ length: 24 }, (_, hour) => ({ hour, clicks: 0 }));
+  const nowTs = Date.now();
   for (const c of db.clicks) {
-    const h = new Date(c.ts).getHours();
-    const slot = hourly[h];
+    const t = new Date(c.ts).getTime();
+    if (Number.isNaN(t) || t > nowTs) continue; // ignora eventos no futuro
+    const slot = hourly[hourInAppTz(c.ts)];
     if (slot) slot.clicks += 1;
   }
 
-  const recentClicks = [...db.clicks]
+  const recentClicks = db.clicks
+    .filter((c) => new Date(c.ts).getTime() <= nowTs)
     .sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime())
     .slice(0, 8)
     .map((c) => ({ ...c, productName: productName.get(c.product_id) }));

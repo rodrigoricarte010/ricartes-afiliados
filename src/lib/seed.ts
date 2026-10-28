@@ -13,18 +13,23 @@ import type {
   Product,
   Settings,
 } from './types';
-import { slugify } from './format';
+import { dayKey, slugify } from './format';
 import { generateForProduct, type ContentFormat } from './content-engine';
 
+/**
+ * Instante em que o relógio de Brasília marca `hour:minute`, há `daysAgo` dias.
+ * O servidor roda em UTC (Vercel), por isso somamos as 3 horas do fuso no
+ * cálculo em vez de usar `setHours` (que dependeria do relógio da máquina).
+ */
 function iso(daysAgo: number, hour = 12, minute = 0): string {
-  const now = new Date();
-  const d = new Date(now);
-  d.setDate(d.getDate() - daysAgo);
-  d.setHours(hour, minute, 0, 0);
+  const [y, m, d] = dayKey(new Date()).split('-').map(Number) as [number, number, number];
+  const at = (extraDays: number) =>
+    new Date(Date.UTC(y, m - 1, d - daysAgo - extraDays, hour + 3, minute, 0, 0));
+
   // Nunca inventa evento no futuro: se o horário sorteado ainda não chegou,
   // recua um dia (mantém a curva de 45 dias sem distorcer os gráficos).
-  if (d.getTime() > now.getTime()) d.setDate(d.getDate() - 1);
-  return d.toISOString();
+  const date = at(0).getTime() > Date.now() ? at(1) : at(0);
+  return date.toISOString();
 }
 
 // PRNG determinístico para os dados de demo
