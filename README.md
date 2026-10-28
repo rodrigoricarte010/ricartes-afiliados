@@ -69,6 +69,13 @@ Aceita `/<handle>` e `/<handle>` com `@` (ex.: `/ricartes` ou `/@ricartes`), al�
 
 ---
 
+## Guia rápido de produção
+
+Se o objetivo é só usar a plataforma no dia a dia (senha, limpar demonstração, links e diagnóstico),
+veja [`docs/primeiros-passos.md`](docs/primeiros-passos.md).
+
+---
+
 ## Como rodar
 
 ```bash
