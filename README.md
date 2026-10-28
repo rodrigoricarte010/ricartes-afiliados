@@ -105,7 +105,7 @@ Copie `.env.example` para `.env.local` (ou `.env`) e ajuste:
 
 ### Modo local (padrão)
 Grava em `.data/db.json` (ignorado pelo git). Ótimo para testar. Em serverless (Vercel) o disco é efêmero —
-**use Supabase em produção**.
+**use um Postgres gerenciado (Neon) em produção**.
 
 ### Qualquer Postgres (recomendado: Neon) — mais simples
 1. Crie um banco grátis em [neon.tech](https://neon.tech) (ou Railway, Render, Supabase pela aba *Connect*).
@@ -142,8 +142,8 @@ públicas; a `anon key` não consegue escrever nada.
 ## Deploy na Vercel
 
 1. Importe este repositório na Vercel.
-2. Configure as variáveis da tabela acima (`DB_DRIVER=supabase`, `APP_PASSWORD`, `AUTH_SECRET`,
-   `NEXT_PUBLIC_APP_URL`).
+2. Configure as variáveis da tabela acima (`DB_DRIVER=postgres`, `DATABASE_URL`, `APP_PASSWORD`,
+   `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`).
 3. Deploy. As rotas dinâmicas já estão marcadas com `force-dynamic` e as Server Actions funcionam no domínio da Vercel.
 
 ---
