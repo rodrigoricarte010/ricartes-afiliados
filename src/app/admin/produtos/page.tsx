@@ -36,7 +36,7 @@ export default async function ProductsPage() {
       />
 
       <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-        <div className="space-y-4">
+        <div className="order-2 space-y-4 lg:order-1">
           <div className="grid grid-cols-3 gap-3">
             <div className="card p-4">
               <p className="text-[10px] uppercase tracking-wider text-white/35">Produtos</p>
@@ -89,9 +89,11 @@ export default async function ProductsPage() {
           </SectionCard>
         </div>
 
+        <div className="order-1 lg:order-2">
         <SectionCard title="Novo produto" subtitle="Leva menos de 1 minuto">
           <ProductForm />
         </SectionCard>
+        </div>
       </div>
     </div>
   );
