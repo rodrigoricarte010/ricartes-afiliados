@@ -8,7 +8,7 @@ import { brl } from '@/lib/format';
 function Submit({ price }: { price: number }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" className="btn-primary w-full !py-3.5 text-base" disabled={pending}>
+    <button type="submit" className="btn-buy w-full !py-3.5 text-sm" disabled={pending}>
       {pending ? 'Processando…' : `Quero garantir por ${brl(price)}`}
     </button>
   );

@@ -1,5 +1,5 @@
 -- ===========================================================================
--- Ricartes Afiliados — schema do banco (Supabase / Postgres)
+-- Ricartes Renda Extra — schema do banco (Supabase / Postgres)
 --
 -- Como usar:
 --   1. Abra o projeto no Supabase → SQL Editor → New query

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { BRAND } from '@/lib/brand';
 
 const NAV = [
   { href: '/admin', label: 'Visão geral', icon: '▤', exact: true },
@@ -93,7 +94,7 @@ export function Sidebar({
       <div className="sticky top-0 z-40 flex items-center justify-between border-b border-white/[0.07] bg-ink-950/85 px-4 py-3 backdrop-blur-xl lg:hidden">
         <Link href="/admin" className="flex items-center gap-2">
           <Logo />
-          <span className="font-display text-sm font-bold">Ricartes</span>
+          <span className="font-display text-sm font-bold">{BRAND.short}</span>
         </Link>
         <button
           onClick={() => setOpen((v) => !v)}
@@ -120,8 +121,8 @@ export function Sidebar({
           <Link href="/admin" className="flex items-center gap-2.5">
             <Logo />
             <div className="leading-tight">
-              <p className="font-display text-sm font-bold tracking-tight text-white">Ricartes</p>
-              <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">Afiliados</p>
+              <p className="font-display text-sm font-bold tracking-tight text-white">{BRAND.short}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-brand-300/70">{BRAND.suffix}</p>
             </div>
           </Link>
         </div>
@@ -148,12 +149,12 @@ export function Sidebar({
 export function Logo({ size = 32 }: { size?: number }) {
   return (
     <span
-      className="grid shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500 via-brand-600 to-brand-800 shadow-[0_8px_24px_-10px_rgba(255,58,38,0.9)]"
+      className="grid shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-400 via-brand-600 to-brand-800 shadow-[0_8px_24px_-10px_rgba(115,80,247,0.95)]"
       style={{ width: size, height: size }}
     >
       <svg width={size * 0.55} height={size * 0.55} viewBox="0 0 24 24" fill="none" aria-hidden>
         <path d="M5 20V5.5C5 4.7 5.7 4 6.5 4h6a5 5 0 0 1 0 10h-3" stroke="white" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9.5 14l7 6" stroke="white" strokeWidth="2.4" strokeLinecap="round" />
+        <path d="M9.5 14l7 6" stroke="#b6f24a" strokeWidth="2.4" strokeLinecap="round" />
       </svg>
     </span>
   );

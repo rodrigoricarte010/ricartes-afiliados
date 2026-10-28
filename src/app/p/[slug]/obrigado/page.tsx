@@ -4,6 +4,7 @@ import { repo } from '@/lib/db';
 import { brl } from '@/lib/format';
 import { CopyButton } from '@/components/CopyButton';
 import { Logo } from '@/components/Sidebar';
+import { BRAND } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Pedido recebido' };
@@ -90,7 +91,7 @@ export default async function ThankYouPage({
                 href={`https://wa.me/${whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(pixMessage)}`}
                 target="_blank"
                 rel="noreferrer"
-                className="btn-primary w-full !py-3"
+                className="btn-buy w-full !py-3"
               >
                 Enviar comprovante no WhatsApp
               </a>
@@ -107,7 +108,7 @@ export default async function ThankYouPage({
 
         <p className="mt-6 text-center text-[10px] text-white/25">
           <Link href="/" className="hover:text-white/40">
-            Plataforma Ricartes
+            {BRAND.name}
           </Link>
         </p>
       </div>

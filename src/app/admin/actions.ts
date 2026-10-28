@@ -265,7 +265,7 @@ export async function saveInfoproductAction(_prev: ActionState, formData: FormDa
     pix_key: str(formData, 'pix_key') || undefined,
     whatsapp: str(formData, 'whatsapp') || undefined,
     image_url: str(formData, 'image_url') || undefined,
-    theme: (str(formData, 'theme') || 'ember') as Infoproduct['theme'],
+    theme: (str(formData, 'theme') || 'royal') as Infoproduct['theme'],
     status: (str(formData, 'status') || 'ativo') as Infoproduct['status'],
   });
 

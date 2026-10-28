@@ -81,13 +81,13 @@ export default async function InfoproductsPage() {
                 <div className="flex items-start gap-4 p-4 sm:p-5">
                   <div
                     className={`grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-lg font-bold text-white ${
-                      product.theme === 'ember'
-                        ? 'from-brand-500 to-orange-700'
-                        : product.theme === 'lime'
-                          ? 'from-lime-500 to-emerald-700'
-                          : product.theme === 'royal'
-                            ? 'from-violet-500 to-indigo-700'
-                            : 'from-slate-600 to-slate-900'
+                      product.theme === 'royal'
+                        ? 'from-brand-400 to-brand-700'
+                        : product.theme === 'midnight'
+                          ? 'from-sky-400 to-indigo-800'
+                          : product.theme === 'ember'
+                            ? 'from-amber-400 to-orange-700'
+                            : 'from-lime-400 to-emerald-700'
                     }`}
                   >
                     ◆

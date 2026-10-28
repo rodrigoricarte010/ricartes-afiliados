@@ -1,19 +1,27 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { ToastProvider } from '@/components/Toast';
+import { BRAND, BRAND_METADATA } from '@/lib/brand';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ricartes — Plataforma de Afiliados e Infoprodutos',
-    template: '%s · Ricartes',
+    default: BRAND_METADATA.title,
+    template: `%s · ${BRAND.name}`,
   },
-  description:
-    'Painel completo para afiliar produtos na Shopee, TikTok Shop e Mercado Livre, gerar conteúdo que vende e comercializar seus próprios infoprodutos.',
-  applicationName: 'Ricartes Afiliados',
+  description: BRAND_METADATA.description,
+  applicationName: BRAND.name,
+  authors: [{ name: BRAND.short }],
+  openGraph: {
+    title: BRAND_METADATA.title,
+    description: BRAND_METADATA.description,
+    siteName: BRAND.name,
+    locale: 'pt_BR',
+    type: 'website',
+  },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#07070c',
+  themeColor: '#06060d',
   width: 'device-width',
   initialScale: 1,
 };

@@ -4,6 +4,7 @@ import { brl } from '@/lib/format';
 import { Logo } from '@/components/Sidebar';
 import { dashboardStats } from '@/lib/stats';
 import { PLATFORM_LABEL } from '@/lib/types';
+import { BRAND } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,8 +60,8 @@ export default async function HomePage() {
         <div className="flex items-center gap-2.5">
           <Logo size={30} />
           <div className="leading-tight">
-            <p className="font-display text-sm font-bold tracking-tight text-white">Ricartes</p>
-            <p className="text-[10px] uppercase tracking-[0.16em] text-white/35">Afiliados</p>
+            <p className="font-display text-sm font-bold tracking-tight text-white">{BRAND.short}</p>
+            <p className="text-[10px] uppercase tracking-[0.16em] text-brand-300/70">{BRAND.suffix}</p>
           </div>
         </div>
         <nav className="flex items-center gap-2">
@@ -78,28 +79,37 @@ export default async function HomePage() {
       {/* hero */}
       <section className="relative mx-auto max-w-6xl px-5 pb-8 pt-10 sm:pt-16">
         <div className="animate-in">
-          <span className="badge bg-brand-500/15 text-brand-200 ring-brand-500/25">
-            ✦ Afiliados + conteúdo + infoprodutos
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="badge badge-live animate-pulse-ring">
+              <span className="h-1.5 w-1.5 rounded-full bg-lime-400" /> painel liberado
+            </span>
+            <span className="badge bg-brand-500/15 text-brand-200 ring-brand-500/25">
+              Afiliados + conteúdo + infoprodutos
+            </span>
+          </div>
+
           <h1 className="mt-5 max-w-3xl font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Transforme <span className="text-brand-400">achadinhos</span> em renda
+            Transforme <span className="bg-gradient-to-r from-brand-300 via-brand-400 to-sky-400 bg-clip-text text-transparent">achadinhos</span> em renda
             <span className="block text-white/40">com um sistema, não com sorte.</span>
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-white/55 sm:text-lg">
-            Uma plataforma só para divulgar produtos da Shopee e do TikTok Shop, gerar os roteiros dos vídeos e vender
-            seus próprios infoprodutos — com métricas de verdade em cada etapa.
+            Divulgue produtos da Shopee e do TikTok Shop, gere os roteiros dos vídeos em segundos e venda seus próprios
+            infoprodutos — com métricas de verdade em cada etapa.
           </p>
 
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Link href="/admin" className="btn-primary px-6 py-3 text-sm shadow-glow">
-              Abrir meu painel →
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Link href="/admin" className="btn-buy px-7 py-3 text-sm">
+              Começar agora — é grátis →
             </Link>
             {featured && (
               <Link href={`/p/${featured.slug}`} className="btn-ghost px-6 py-3 text-sm">
-                Ver exemplo de página de vendas
+                Ver página de vendas
               </Link>
             )}
           </div>
+          <p className="mt-2.5 text-[11px] text-white/35">
+            Sem cartão de crédito · dados de exemplo já carregados · você pode apagar tudo depois
+          </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-white/35">
             <span>Login por senha</span>
@@ -110,8 +120,31 @@ export default async function HomePage() {
           </div>
         </div>
 
+        {/* prova social — números reais do banco */}
+        <div className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-white/[0.07] py-3 text-[11px] text-white/40">
+          <span className="flex items-center gap-1.5">
+            <span className="flex -space-x-1.5">
+              {['JM', 'PA', 'CR', 'RS'].map((initials) => (
+                <span
+                  key={initials}
+                  className="grid h-5 w-5 place-items-center rounded-full border border-ink-950 bg-gradient-to-br from-brand-500 to-brand-700 text-[8px] font-bold text-white"
+                >
+                  {initials}
+                </span>
+              ))}
+            </span>
+            comissões registradas no painel
+          </span>
+          <span>·</span>
+          <span>{db.products.length} produtos no catálogo</span>
+          <span>·</span>
+          <span>{db.content_posts.length} roteiros prontos</span>
+          <span>·</span>
+          <span>{brl(s.commissionApproved, { compact: true })} de comissão acumulada</span>
+        </div>
+
         {/* card de métricas */}
-        <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {stats.map((item) => (
             <div key={item.label} className="card p-4">
               <p className="font-display text-2xl font-bold text-white">{item.value}</p>
@@ -214,7 +247,7 @@ export default async function HomePage() {
           <div className="flex items-center gap-2">
             <Logo size={20} />
             <span className="text-[11px] text-white/30">
-              Ricartes Afiliados · {db.settings.handle}
+              {BRAND.name} · {db.settings.handle}
             </span>
           </div>
           <div className="flex items-center gap-4 text-[11px] text-white/30">

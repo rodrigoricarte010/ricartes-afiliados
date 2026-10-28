@@ -17,17 +17,17 @@ function Submit({ isEdit }: { isEdit: boolean }) {
 }
 
 const THEMES: { value: Infoproduct['theme']; label: string; preview: string }[] = [
-  { value: 'ember', label: 'Ember (vermelho)', preview: 'from-brand-500 to-orange-600' },
-  { value: 'midnight', label: 'Midnight (azul)', preview: 'from-slate-700 to-slate-900' },
-  { value: 'lime', label: 'Lime (verde)', preview: 'from-lime-500 to-emerald-600' },
-  { value: 'royal', label: 'Royal (violeta)', preview: 'from-violet-500 to-indigo-700' },
+  { value: 'royal', label: 'Violeta da marca', preview: 'from-brand-400 to-brand-700' },
+  { value: 'midnight', label: 'Azul profundo', preview: 'from-sky-400 to-indigo-800' },
+  { value: 'ember', label: 'Âmbar quente', preview: 'from-amber-400 to-orange-700' },
+  { value: 'lime', label: 'Verde energia', preview: 'from-lime-400 to-emerald-700' },
 ];
 
 export function InfoproductForm({ infoproduct }: { infoproduct?: Infoproduct }) {
   const [state, action] = useActionState<ActionState, FormData>(saveInfoproductAction, {});
   const [name, setName] = useState(infoproduct?.name ?? '');
   const [slug, setSlug] = useState(infoproduct?.slug ?? '');
-  const [theme, setTheme] = useState<Infoproduct['theme']>(infoproduct?.theme ?? 'ember');
+  const [theme, setTheme] = useState<Infoproduct['theme']>(infoproduct?.theme ?? 'royal');
   const [price, setPrice] = useState(infoproduct ? String(infoproduct.price).replace('.', ',') : '');
   const [original, setOriginal] = useState(
     infoproduct?.original_price ? String(infoproduct.original_price).replace('.', ',') : '',

@@ -6,6 +6,7 @@ import { brl, initials } from '@/lib/format';
 import { CheckoutForm } from './CheckoutForm';
 import { Logo } from '@/components/Sidebar';
 import type { Infoproduct } from '@/lib/types';
+import { BRAND } from '@/lib/brand';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,33 +14,33 @@ const THEME: Record<
   Infoproduct['theme'],
   { glow: string; accent: string; accentText: string; badge: string; button: string }
 > = {
-  ember: {
-    glow: 'from-brand-500/25 via-orange-600/10',
+  royal: {
+    glow: 'from-brand-500/30 via-brand-700/15',
     accent: 'bg-brand-500',
     accentText: 'text-brand-300',
     badge: 'bg-brand-500/15 text-brand-200 ring-brand-500/30',
-    button: 'bg-brand-500 hover:bg-brand-400 text-white',
+    button: 'btn-buy',
   },
   midnight: {
-    glow: 'from-sky-500/20 via-indigo-700/10',
+    glow: 'from-sky-500/25 via-indigo-700/15',
     accent: 'bg-sky-500',
     accentText: 'text-sky-300',
     badge: 'bg-sky-500/15 text-sky-200 ring-sky-500/30',
-    button: 'bg-sky-500 hover:bg-sky-400 text-white',
+    button: 'btn-buy',
+  },
+  ember: {
+    glow: 'from-amber-500/25 via-orange-700/15',
+    accent: 'bg-amber-500',
+    accentText: 'text-amber-300',
+    badge: 'bg-amber-500/15 text-amber-200 ring-amber-500/30',
+    button: 'btn-buy',
   },
   lime: {
-    glow: 'from-lime-500/20 via-emerald-700/10',
+    glow: 'from-lime-500/25 via-emerald-700/15',
     accent: 'bg-lime-500',
     accentText: 'text-lime-300',
     badge: 'bg-lime-500/15 text-lime-200 ring-lime-500/30',
-    button: 'bg-lime-500 hover:bg-lime-400 text-ink-950',
-  },
-  royal: {
-    glow: 'from-violet-500/20 via-indigo-700/10',
-    accent: 'bg-violet-500',
-    accentText: 'text-violet-300',
-    badge: 'bg-violet-500/15 text-violet-200 ring-violet-500/30',
-    button: 'bg-violet-500 hover:bg-violet-400 text-white',
+    button: 'btn-buy',
   },
 };
 
@@ -75,6 +76,13 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
       <div className={`pointer-events-none absolute inset-x-0 top-0 h-[520px] bg-gradient-to-b ${theme.glow} to-transparent`} />
       <div className="pointer-events-none absolute inset-0 grid-lines opacity-30" />
 
+      {/* faixa de oferta */}
+      {discount > 0 && (
+        <div className="promo-bar relative">
+          Oferta de lançamento · {discount}% OFF · acesso imediato
+        </div>
+      )}
+
       {/* barra */}
       <header className="relative mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
         <div className="flex items-center gap-2">
@@ -82,9 +90,10 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
           <span className="text-sm font-semibold text-white">{db.settings.display_name}</span>
           <span className="hidden text-xs text-white/35 sm:inline">{db.settings.handle}</span>
         </div>
-        {discount > 0 && (
-          <span className={`badge ${theme.badge}`}>🔥 {discount}% OFF hoje</span>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="badge badge-live">● acesso imediato</span>
+          {discount > 0 && <span className={`badge ${theme.badge}`}>{discount}% OFF</span>}
+        </div>
       </header>
 
       {/* hero */}
@@ -110,7 +119,7 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <a href="#checkout" className={`btn ${theme.button} px-6 py-3 text-sm shadow-glow`}>
+              <a href="#checkout" className={`${theme.button} px-6 py-3 text-sm`}>
                 Quero começar agora →
               </a>
               <a href="#conteudo" className="btn-ghost px-6 py-3 text-sm">
@@ -145,7 +154,7 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
 
               {product.checkout_url ? (
                 <div className="space-y-3">
-                  <a href={product.checkout_url} className={`btn ${theme.button} w-full !py-3.5 text-base`}>
+                  <a href={product.checkout_url} className={`${theme.button} w-full !py-3.5 text-base`}>
                     Ir para o checkout seguro →
                   </a>
                   <p className="text-center text-[10px] text-white/30">
@@ -280,12 +289,12 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
           <p className="mx-auto mt-2 max-w-md text-sm text-white/45">
             Acesso imediato após o pagamento. Você recebe o material no seu e-mail e pode começar hoje mesmo.
           </p>
-          <a href="#checkout" className={`btn ${theme.button} mt-5 px-8 py-3.5 text-base shadow-glow`}>
+          <a href="#checkout" className={`${theme.button} mt-5 px-8 py-3.5 text-base`}>
             Garantir meu acesso por {brl(product.price)}
           </a>
         </section>
 
-        <footer className="mt-16 border-t border-white/[0.07] pt-6 text-center">
+        <footer className="mt-16 border-t border-white/[0.07] pt-6 pb-20 text-center sm:pb-6">
           <div className="flex items-center justify-center gap-2">
             <Logo size={22} />
             <span className="text-xs text-white/40">
@@ -297,10 +306,23 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
             Este produto não garante resultados financeiros. Resultados variam conforme dedicação.
           </p>
           <Link href="/" className="mt-3 inline-block text-[10px] text-white/20 hover:text-white/40">
-            Plataforma Ricartes
+            {BRAND.name}
           </Link>
         </footer>
       </main>
+
+      {/* CTA fixo no mobile */}
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-ink-950/95 px-4 pt-3 backdrop-blur-xl safe-bottom sm:hidden">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0">
+            <p className="text-[10px] uppercase tracking-wider text-white/35">Hoje por</p>
+            <p className="font-display text-lg font-extrabold leading-none text-white">{brl(product.price)}</p>
+          </div>
+          <a href="#checkout" className={`${theme.button} flex-1 !py-3 text-xs`}>
+            Garantir acesso →
+          </a>
+        </div>
+      </div>
     </div>
   );
 }

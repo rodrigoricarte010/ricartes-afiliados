@@ -15,7 +15,7 @@ interface AreaChartProps {
 export function AreaChart({
   data,
   height = 180,
-  color = '#ff3a26',
+  color = '#8d78fd',
   formatValue = num,
   showAxis = true,
 }: AreaChartProps) {
@@ -85,7 +85,7 @@ interface BarsProps {
   prefix?: string;
 }
 
-export function BarsChart({ data, height = 90, color = '#9ee22b', prefix = '' }: BarsProps) {
+export function BarsChart({ data, height = 90, color = '#b6f24a', prefix = '' }: BarsProps) {
   const max = Math.max(1, ...data.map((d) => d.value));
   return (
     <div className="flex items-end gap-1" style={{ height }}>
@@ -174,7 +174,7 @@ export function Donut({ data, size = 140, thickness = 16, centerLabel, centerVal
 export function ProgressBar({
   value,
   max,
-  color = '#ff3a26',
+  color = '#8d78fd',
 }: {
   value: number;
   max: number;
@@ -189,5 +189,5 @@ export function ProgressBar({
 }
 
 export function MoneySpark({ data }: { data: { label: string; value: number }[] }) {
-  return <AreaChart data={data} height={120} color="#9ee22b" formatValue={(v) => brl(v, { compact: true })} showAxis={false} />;
+  return <AreaChart data={data} height={120} color="#b6f24a" formatValue={(v) => brl(v, { compact: true })} showAxis={false} />;
 }

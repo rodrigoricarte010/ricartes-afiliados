@@ -1,6 +1,6 @@
-# Ricartes — Plataforma de Afiliados & Infoprodutos
+# Ricartes Renda Extra — Plataforma de Afiliados & Infoprodutos
 
-Plataforma all-in-one para **ganhar dinheiro como afiliado** (Shopee, TikTok Shop, Mercado Livre, Amazon) e
+Plataforma all-in-one da **Ricartes Renda Extra** para **ganhar dinheiro como afiliado** (Shopee, TikTok Shop, Mercado Livre, Amazon) e
 **vender seus próprios infoprodutos**, com painel de métricas, gerador de roteiros para TikTok/Reels e páginas de
 vendas prontas.
 

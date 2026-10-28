@@ -20,9 +20,9 @@ export default async function DashboardPage() {
   const commissionSeries = s.series.map((p) => ({ label: dateShort(`${p.day}T12:00:00`), value: p.commission }));
 
   const deviceColors: Record<string, string> = {
-    mobile: '#ff3a26',
-    desktop: '#9ee22b',
-    tablet: '#5865f2',
+    mobile: '#8d78fd',
+    desktop: '#b6f24a',
+    tablet: '#38bdf8',
     outro: '#8b8b9e',
   };
 
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
           subtitle={`${num(totalClicks30)} cliques nos últimos 30 dias`}
           action={<span className="text-[11px] text-white/35">30 dias</span>}
         >
-          <AreaChart data={series} height={190} color="#ff3a26" />
+          <AreaChart data={series} height={190} color="#8d78fd" />
           <div className="mt-4 grid grid-cols-3 gap-3 border-t border-white/[0.06] pt-4">
             <div>
               <p className="text-[10px] uppercase tracking-wider text-white/35">Média/dia</p>
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                   <ProgressBar
                     value={src.clicks}
                     max={s.bySource[0]!.clicks}
-                    color={['#ff3a26', '#9ee22b', '#5865f2', '#f59e0b', '#22d3ee'][i] ?? '#8b8b9e'}
+                    color={['#8d78fd', '#b6f24a', '#38bdf8', '#f59e0b', '#f472b6'][i] ?? '#8b8b9e'}
                   />
                 </div>
               ))}
@@ -389,7 +389,7 @@ export default async function DashboardPage() {
             {db.infoproducts.length === 1 ? '' : 's'} publicado{db.infoproducts.length === 1 ? '' : 's'}
           </p>
           <div className="mt-3">
-            <AreaChart data={commissionSeries} height={60} color="#9ee22b" showAxis={false} formatValue={(v) => brl(v, { compact: true })} />
+            <AreaChart data={commissionSeries} height={60} color="#b6f24a" showAxis={false} formatValue={(v) => brl(v, { compact: true })} />
           </div>
           <Link href="/admin/infoprodutos" className="mt-2 inline-block text-xs font-semibold text-lime-300 hover:text-lime-200">
             Gerenciar infoprodutos →

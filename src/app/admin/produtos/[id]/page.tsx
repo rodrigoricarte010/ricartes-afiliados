@@ -72,7 +72,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           </div>
 
           <SectionCard title="Cliques nos últimos 14 dias">
-            <AreaChart data={series} height={150} color="#ff3a26" />
+            <AreaChart data={series} height={150} color="#8d78fd" />
           </SectionCard>
 
           <SectionCard title="Editar dados do produto">
