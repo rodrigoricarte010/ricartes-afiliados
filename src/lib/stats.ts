@@ -61,15 +61,21 @@ import type { Order } from './types';
 function withinDays(iso: string, days: number): boolean {
   const t = new Date(iso).getTime();
   if (Number.isNaN(t)) return false;
-  return Date.now() - t <= days * 86400000;
+  const diff = Date.now() - t;
+  // Ignora datas no futuro (relógio errado, importação): métrica honesta.
+  return diff >= 0 && diff <= days * 86400000;
 }
 
 export function productStats(db: Database): ProductStats[] {
-  const now7 = Date.now() - 7 * 86400000;
+  const now = Date.now();
+  const now7 = now - 7 * 86400000;
   return db.products
     .map((product) => {
       const clicks = db.clicks.filter((c) => c.product_id === product.id);
-      const clicks7d = clicks.filter((c) => new Date(c.ts).getTime() >= now7).length;
+      const clicks7d = clicks.filter((c) => {
+        const t = new Date(c.ts).getTime();
+        return t >= now7 && t <= now;
+      }).length;
       const convs = db.conversions.filter((c) => c.product_id === product.id);
       const approved = convs.filter((c) => c.status === 'aprovada');
       const pending = convs.filter((c) => c.status === 'pendente');

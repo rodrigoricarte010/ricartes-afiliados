@@ -17,9 +17,13 @@ import { slugify } from './format';
 import { generateForProduct, type ContentFormat } from './content-engine';
 
 function iso(daysAgo: number, hour = 12, minute = 0): string {
-  const d = new Date();
+  const now = new Date();
+  const d = new Date(now);
   d.setDate(d.getDate() - daysAgo);
   d.setHours(hour, minute, 0, 0);
+  // Nunca inventa evento no futuro: se o horário sorteado ainda não chegou,
+  // recua um dia (mantém a curva de 45 dias sem distorcer os gráficos).
+  if (d.getTime() > now.getTime()) d.setDate(d.getDate() - 1);
   return d.toISOString();
 }
 
