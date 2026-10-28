@@ -198,6 +198,35 @@ function driverName(): 'file' | 'supabase' | 'postgres' {
 
 let pgQuery: import('./db-pg').PgQueryable['query'] | null = null;
 
+/**
+ * Normaliza a connection string antes de entregá-la ao `pg`.
+ *
+ * O driver lê o `sslmode` da própria URL e, nas versões recentes, trata
+ * `require` como `verify-full` — isso sobrepõe o `ssl` que passamos no Pool.
+ * Também existem parâmetros (ex.: `channel_binding`, copiado do painel do
+ * Neon) que o `pg` não implementa. Removemos esses parâmetros e cuidamos do
+ * TLS explicitamente, o que funciona igual em Neon, Supabase, Railway e local.
+ */
+function normalizePgUrl(raw: string): { url: string; needsSsl: boolean } {
+  let parsed: URL | null = null;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    parsed = null; // string fora do formato URL: deixa o `pg` reclamar
+  }
+
+  const sslmode = parsed?.searchParams.get('sslmode') ?? null;
+  if (parsed) {
+    parsed.searchParams.delete('sslmode');
+    parsed.searchParams.delete('channel_binding');
+  }
+
+  const knownHosted = /neon\.tech|supabase\.co|render\.com|railway|amazonaws|azure/i.test(raw);
+  const needsSsl = sslmode === 'disable' ? false : sslmode !== null || knownHosted;
+
+  return { url: parsed ? parsed.toString() : raw, needsSsl };
+}
+
 async function getPgQuery(): Promise<import('./db-pg').PgQueryable['query']> {
   if (pgQuery) return pgQuery;
 
@@ -207,15 +236,14 @@ async function getPgQuery(): Promise<import('./db-pg').PgQueryable['query']> {
   }
 
   const pg = await import('pg');
-  const needsSsl = /sslmode=require|neon\.tech|supabase\.co|render\.com|railway|aws|azure/i.test(
-    connectionString,
-  );
+  const { url, needsSsl } = normalizePgUrl(connectionString);
 
   const pool = new pg.Pool({
-    connectionString,
+    connectionString: url,
     max: 3,
     idleTimeoutMillis: 10_000,
-    ssl: needsSsl ? { rejectUnauthorized: false } : undefined,
+    connectionTimeoutMillis: 15_000,
+    ssl: needsSsl ? { rejectUnauthorized: false } : false,
   });
 
   pgQuery = async (text, params) => {
