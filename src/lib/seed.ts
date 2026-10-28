@@ -313,7 +313,7 @@ export function buildDemoDatabase(): Database {
       id: 'inf_001',
       slug: 'achadinhos-que-vendem',
       name: 'Achadinhos que Vendem',
-      tagline: 'O método que transformou 3 seguidores em R$ 7.400/mês de comissão',
+      tagline: 'O passo a passo para escolher produto, gravar e divulgar sem aparecer',
       description:
         'Um guia direto ao ponto para quem quer viver de recomendar produtos na Shopee e no TikTok Shop sem aparecer, sem gastar com anúncios e sem depender de sorte no algoritmo. São 6 módulos com os roteiros que realmente convertem, a planilha de escolha de produto e o calendário de postagem de 30 dias.',
       price: 97,
@@ -332,9 +332,13 @@ export function buildDemoDatabase(): Database {
         { title: 'Aula: TikTok Shop do zero', description: 'Passo a passo para liberar o carrinho amarelo.' },
       ],
       testimonials: [
-        { name: 'Juliana M.', role: 'Aluna desde março', text: 'Em 3 semanas bati R$ 1.200 de comissão só replicando os roteiros do módulo 2.' },
-        { name: 'Pedro A.', role: 'Afiliado Shopee', text: 'A planilha sozinha já pagou o curso. Parei de testar produto aleatório.' },
-        { name: 'Camila R.', role: 'Mãe e criadora', text: 'Posto 1 vídeo por dia no intervalo do almoço. Nunca foi tão simples.' },
+        {
+          name: 'Juliana M.',
+          role: 'Exemplo de depoimento',
+          text: 'Depoimento de exemplo: aqui entraria o retorno real de quem usou o método — escreva só o que puder comprovar.',
+        },
+        { name: 'Pedro A.', role: 'Exemplo de depoimento', text: 'Depoimento de exemplo: troque por um relato real e autorizado.' },
+        { name: 'Camila R.', role: 'Exemplo de depoimento', text: 'Depoimento de exemplo: o que um cliente disse de verdade sobre o material.' },
       ],
       checkout_url: '',
       pix_key: 'ricartes@exemplo.com',
@@ -363,8 +367,12 @@ export function buildDemoDatabase(): Database {
         { title: 'Template de CapCut', description: 'Projeto pronto para só trocar os clipes.' },
       ],
       testimonials: [
-        { name: 'Rafael S.', text: 'Eu odeio aparecer. Fiz 12 vídeos no modelo e 4 passaram de 50 mil views.' },
-        { name: 'Bianca L.', text: 'O checklist de edição me economiza 1h por vídeo.' },
+        {
+          name: 'Rafael S.',
+          role: 'Exemplo de depoimento',
+          text: 'Depoimento de exemplo: substitua pelo relato real de um cliente, com autorização para publicar.',
+        },
+        { name: 'Bianca L.', role: 'Exemplo de depoimento', text: 'Depoimento de exemplo: escreva aqui a opinião real de quem comprou.' },
       ],
       pix_key: 'ricartes@exemplo.com',
       whatsapp: '5585999999999',

@@ -98,6 +98,12 @@ export default async function SalesPage({ params }: { params: Promise<{ slug: st
 
       {/* hero */}
       <main className="relative mx-auto max-w-6xl px-5 pb-16">
+        {db.settings.is_demo && (
+          <div className="mt-4 rounded-xl border border-amber-400/25 bg-amber-500/10 px-4 py-2.5 text-[11.5px] text-amber-100/85">
+            <b>Página de exemplo.</b> Nome, preço, bônus e depoimentos são fictícios — substitua pelos seus antes de
+            divulgar. Edite em <span className="font-semibold">Painel → Meus infoprodutos</span>.
+          </div>
+        )}
         <div className="grid gap-10 pt-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-14 lg:pt-12">
           <div className="animate-in">
             <span className={`badge ${theme.badge}`}>Infoproduto · acesso imediato</span>
