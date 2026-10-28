@@ -49,6 +49,12 @@ Antes de apagar, use **Configurações → Backup** para baixar um JSON com tudo
 
 1. **Produtos**: cadastre o item com preço, % de comissão e o link de afiliado original.
    Cada produto ganha `https://ricartes-renda-extra.vercel.app/r/<slug>`.
+   - **Cole o link primeiro**: a plataforma (Shopee, TikTok Shop, Mercado Livre, Amazon, Hotmart, Kiwify) é
+     detectada pelo domínio, a comissão típica já vem preenchida e, no Mercado Livre/Amazon, o nome do produto
+     é deduzido da própria URL.
+   - **Muitos produtos?** Use *Produtos → ⇪ Importar lista* e cole uma linha por produto (do Excel, do Sheets ou
+     digitada). Há prévia em tempo real antes de confirmar.
+   - No catálogo dá para buscar por nome/categoria e filtrar por plataforma, status e ordenação.
 2. **Links**: copie o link rastreável (ou o QR Code) e use na bio, nos comentários e nos stories.
    Sempre que possível use `?utm_source=tiktok` (ou `instagram`, `whatsapp`) para separar a origem.
 3. **Conteúdo**: escolha o produto, o formato e o tom; o estúdio devolve gancho, roteiro,
