@@ -129,6 +129,27 @@ async function main() {
     afterOrders.conversions.find((c) => c.id === 'cnv_teste')?.commission,
   );
 
+  // limpar tudo: tabelas vazias, settings zerado e sem semear de novo
+  await store.save(
+    {
+      settings: { ...afterOrders.settings, is_demo: false, display_name: '', handle: '' },
+      products: [],
+      clicks: [],
+      conversions: [],
+      content_posts: [],
+      infoproducts: [],
+      orders: [],
+    },
+    ['clicks', 'conversions', 'content_posts', 'orders', 'infoproducts', 'products'],
+  );
+  const cleared = await store.load();
+  check('clearAll: produtos vazios', cleared.products.length === 0, cleared.products.length);
+  check('clearAll: cliques vazios', cleared.clicks.length === 0, cleared.clicks.length);
+  check('clearAll: comissões vazias', cleared.conversions.length === 0, cleared.conversions.length);
+  check('clearAll: pedidos vazios', cleared.orders.length === 0, cleared.orders.length);
+  check('clearAll: settings sem nome', cleared.settings.display_name === '', cleared.settings.display_name);
+  check('clearAll: is_demo desligado', cleared.settings.is_demo === false, cleared.settings.is_demo);
+
   await pool.end();
 
   console.log(

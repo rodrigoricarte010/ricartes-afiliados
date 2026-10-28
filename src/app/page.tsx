@@ -108,7 +108,9 @@ export default async function HomePage() {
             )}
           </div>
           <p className="mt-2.5 text-[11px] text-white/35">
-            Sem cartão de crédito · dados de exemplo já carregados · você pode apagar tudo depois
+            {db.settings.is_demo
+              ? 'Sem cartão de crédito · dados de exemplo já carregados · você pode apagar tudo depois'
+              : 'Sem cartão de crédito · seus dados ficam no seu banco'}
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] text-white/35">

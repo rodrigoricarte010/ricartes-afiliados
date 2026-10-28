@@ -402,6 +402,26 @@ export async function importBackupAction(_prev: ActionState, formData: FormData)
   return { ok: true, message: result.message };
 }
 
+/**
+ * Limpa tudo (produtos, cliques, vendas, roteiros, infoprodutos e pedidos)
+ * para começar com dados reais. Exige digitar "LIMPAR" para confirmar.
+ */
+export async function clearDataAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await guard();
+
+  const confirmation = str(formData, 'confirmacao').toUpperCase();
+  if (confirmation !== 'LIMPAR') {
+    return { ok: false, message: 'Digite LIMPAR para confirmar (em maiúsculas).' };
+  }
+
+  await repo.clearAll();
+  revalidateAll();
+  return {
+    ok: true,
+    message: 'Dados de demonstração removidos. O painel está pronto para os seus dados.',
+  };
+}
+
 export async function resetDemoAction(): Promise<void> {
   await guard();
   await repo.resetDemo();

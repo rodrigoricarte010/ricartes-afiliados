@@ -44,7 +44,26 @@ function mulberry32(seed: number) {
   };
 }
 
+/**
+ * Configuração usada como base quando o banco ainda não tem nada.
+ * Nada de dados inventados aqui: só o esqueleto, com campos vazios.
+ */
+export const EMPTY_SETTINGS: Settings = {
+  display_name: '',
+  handle: '',
+  bio: '',
+  pix_key: '',
+  whatsapp: '',
+  support_email: '',
+  default_commission_pct: 12,
+  is_demo: false,
+  affiliate_programs: (['shopee', 'tiktok', 'mercadolivre', 'amazon', 'hotmart', 'kiwify'] as const).map(
+    (platform) => ({ platform, status: 'nao_iniciado' as const, note: '' }),
+  ),
+};
+
 export const DEMO_SETTINGS: Settings = {
+  is_demo: true,
   display_name: 'Ricarte',
   handle: '@ricartes',
   bio: 'Achadinhos que valem a pena • Testo antes de indicar • Links com cupom todo dia',

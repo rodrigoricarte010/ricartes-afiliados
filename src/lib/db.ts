@@ -21,7 +21,7 @@ import type {
   Settings,
   TableName,
 } from './types';
-import { buildDemoDatabase, DEMO_SETTINGS } from './seed';
+import { buildDemoDatabase, EMPTY_SETTINGS } from './seed';
 import { PostgresStore } from './db-pg';
 import { normalizeDatabase } from './db-normalize';
 
@@ -487,6 +487,29 @@ export const repo = {
     storeSingleton = null;
     const demo = buildDemoDatabase();
     await store().save(demo, 'settings');
+  },
+
+  /**
+   * Apaga tudo e deixa o banco pronto para uso real.
+   *
+   * A linha de `settings` continua existindo (por isso o semeador automático
+   * não roda de novo), só que com campos vazios — nada de contato ou Pix
+   * inventados. As tabelas são limpas dos filhos para os pais por causa das
+   * chaves estrangeiras.
+   */
+  async clearAll(): Promise<void> {
+    await store().load(); // garante schema e cache de ids preenchido
+    const empty: Database = {
+      settings: { ...EMPTY_SETTINGS },
+      products: [],
+      clicks: [],
+      conversions: [],
+      content_posts: [],
+      infoproducts: [],
+      orders: [],
+    };
+    await store().save(empty, ['clicks', 'conversions', 'content_posts', 'orders', 'infoproducts', 'products']);
+    storeSingleton = null;
   },
 
   async isEmpty(): Promise<boolean> {

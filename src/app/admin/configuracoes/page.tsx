@@ -6,6 +6,7 @@ import { CopyButton } from '@/components/CopyButton';
 import { SettingsForm } from './SettingsForm';
 import { BackupCard } from './BackupCard';
 import { resetDemoAction } from '../actions';
+import { ClearDataCard } from './ClearDataCard';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Configurações' };
@@ -172,14 +173,23 @@ export default async function SettingsPage() {
             </p>
           </SectionCard>
 
-          <SectionCard title="Dados de demonstração">
+          <SectionCard
+            title={db.settings.is_demo ? 'Dados de demonstração · apagar' : 'Começar do zero'}
+            subtitle={
+              db.settings.is_demo
+                ? 'O painel está com os exemplos da primeira execução'
+                : 'O banco já está sem dados de exemplo'
+            }
+          >
+            <ClearDataCard produtoCount={db.products.length} cliqueCount={db.clicks.length} />
+          </SectionCard>
+
+          <SectionCard title="Restaurar demonstração">
             <p className="mb-3 text-[11px] leading-snug text-white/40">
-              Recria os produtos, cliques e vendas de exemplo. Tudo que você cadastrou será apagado.
+              Recria os produtos, cliques e vendas de exemplo (útil para testar antes de usar de verdade). Tudo que
+              você cadastrou será apagado.
             </p>
-            <form
-              action={resetDemoAction}
-              onSubmit={undefined}
-            >
+            <form action={resetDemoAction}>
               <button
                 type="submit"
                 className="btn w-full border border-amber-500/30 bg-amber-500/10 text-amber-200 hover:bg-amber-500/20"
@@ -187,9 +197,6 @@ export default async function SettingsPage() {
                 ↺ Restaurar demonstração
               </button>
             </form>
-            <p className="mt-3 text-[10px] text-white/25">
-              Dica: para começar do zero, apague produto por produto na página de produtos (mantém a configuração).
-            </p>
           </SectionCard>
 
           <SectionCard title="Ajuda rápida">

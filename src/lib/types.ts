@@ -141,6 +141,11 @@ export interface Settings {
   support_email: string;
   /** Comissão média usada nas estimativas quando o produto não informa. */
   default_commission_pct: number;
+  /**
+   * `true` enquanto o banco contém os dados de exemplo criados na primeira
+   * execução. Vira `false` quando o usuário limpa tudo e começa do zero.
+   */
+  is_demo: boolean;
   affiliate_programs: { platform: Platform; status: 'conectado' | 'pendente' | 'nao_iniciado'; note?: string }[];
 }
 

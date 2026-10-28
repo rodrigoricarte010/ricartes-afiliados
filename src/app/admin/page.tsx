@@ -76,10 +76,30 @@ export default async function DashboardPage() {
   ];
   const pendingSteps = steps.filter((st) => !st.done);
 
+  const isDemo = settings.is_demo;
+
   return (
     <div>
+      {isDemo && (
+        <div className="mb-5 flex flex-col gap-3 rounded-xl border border-amber-500/25 bg-amber-500/[0.08] p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-amber-100">Você está vendo dados de demonstração</p>
+            <p className="mt-0.5 text-[11.5px] leading-snug text-amber-100/60">
+              Os {db.products.length} produtos, {num(db.clicks.length)} cliques e {db.conversions.length} comissões
+              abaixo são exemplos criados na primeira execução — nenhum é real. Comece do zero quando quiser.
+            </p>
+          </div>
+          <Link
+            href="/admin/configuracoes"
+            className="btn btn-sm shrink-0 border border-amber-400/30 bg-amber-400/10 text-amber-100 hover:bg-amber-400/20"
+          >
+            Limpar e começar do zero
+          </Link>
+        </div>
+      )}
+
       <PageHeader
-        title={`Olá, ${settings.display_name} 👋`}
+        title={`Olá, ${settings.display_name || 'afiliado'} 👋`}
         description="Aqui está o resumo dos seus últimos 30 dias como afiliado e produtor."
         action={
           <>
