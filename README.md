@@ -146,6 +146,30 @@ públicas; a `anon key` não consegue escrever nada.
    `AUTH_SECRET`, `NEXT_PUBLIC_APP_URL`).
 3. Deploy. As rotas dinâmicas já estão marcadas com `force-dynamic` e as Server Actions funcionam no domínio da Vercel.
 
+> Push no repositório **não** dispara deploy enquanto a integração automática estiver desligada no projeto —
+> dispare manualmente (dashboard → *Deployments* → *Redeploy*) depois de mudar variáveis de ambiente.
+
+### Diagnóstico: `/api/health`
+
+Abra `https://SEU-DOMINIO/api/health` no navegador. A resposta mostra o driver ativo, a latência da consulta,
+quantos registros há em cada tabela e — se falhar — a mensagem de erro já sem usuário/senha:
+
+```json
+{ "ok": true, "driver": "postgres", "latencyMs": 3064, "counts": { "products": 10, "clicks": 807 } }
+```
+
+Com `ok: false` e `"error": "..."` o problema está na `DATABASE_URL` (variável ausente, senha trocada, banco
+pausado no Neon). Corrija a variável e faça um novo deploy.
+
+### Neon: detalhes que já estão tratados no código
+
+- O painel do Neon entrega a string com `?sslmode=require&channel_binding=require`. O `pg` não implementa
+  `channel_binding`, e a partir do `pg-connection-string` v2.7 `sslmode=require` passou a valer como
+  `verify-full` (exige CA válida). O driver remove esses parâmetros da URL e configura o TLS no Pool, então
+  basta colar a string como veio.
+- Use a string **com `-pooler`** no host (connection pooling): em serverless cada instância abre o próprio pool
+  e o pooler do Neon evita estourar o limite de conexões.
+
 ---
 
 ## Estrutura
@@ -170,6 +194,7 @@ src/
 │   ├── p/[slug]/                 página de vendas + obrigado
 │   ├── r/[slug]/                 redirecionamento rastreável
 │   ├── api/qr/                   geração de QR
+│   ├── api/health/               diagnóstico do banco em produção
 │   └── api/backup/               exportação do banco em JSON
 ├── components/                   UI, gráficos SVG, sidebar, toasts
 └── lib/
