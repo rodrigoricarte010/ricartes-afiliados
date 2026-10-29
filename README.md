@@ -44,8 +44,14 @@ Gera, a partir de um produto já cadastrado:
 
 ### 4. Guia de afiliação (`/admin/guia`)
 Passo a passo de cadastro em cada programa, requisitos, faixas de comissão, prazos de pagamento, janela de
-atribuição e um plano de 7 dias para a primeira comissão. Conteúdo verificado em outubro/2026 — sempre confirme
-no site oficial, pois as regras mudam.
+atribuição e um plano de 7 dias para a primeira comissão. Inclui:
+- **checklist do que ter em mãos** (CPF, PIS/NIS, conta no seu nome, perfil público) antes de se inscrever;
+- **ordem recomendada**, do mais fácil de aprovar ao que paga mais;
+- botões **Não iniciei / Enviei · em análise / Aprovado** em cada plataforma, que atualizam o mesmo status de
+  Configurações (o painel passa a refletir o cadastro real);
+- **"Fui recusado — e agora?"** com os motivos mais comuns e como corrigir antes de reenviar.
+
+Conteúdo verificado em outubro/2026 — sempre confirme no site oficial, pois as regras mudam.
 
 ### 5. Página de link na bio (`/<seu-handle>`)
 O endereço que vai na bio do TikTok e do Instagram — a superfície que mais converte para afiliado:

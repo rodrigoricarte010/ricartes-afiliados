@@ -7,6 +7,7 @@ import { isAuthenticated, login, logout } from '@/lib/auth';
 import { parseMoney, slugify } from '@/lib/format';
 import { parseProductList } from '@/lib/affiliate';
 import { generateForProduct, type ContentAudience, type ContentFormat, type ContentTone } from '@/lib/content-engine';
+import { PLATFORM_LABEL } from '@/lib/types';
 import type {
   ContentPost,
   ContentStatus,
@@ -422,6 +423,29 @@ export async function clearDataAction(_prev: ActionState, formData: FormData): P
     ok: true,
     message: 'Dados de demonstração removidos. O painel está pronto para os seus dados.',
   };
+}
+
+export async function markProgramAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await guard();
+
+  const platform = str(formData, 'platform') as Platform;
+  const status = str(formData, 'status') as 'conectado' | 'pendente' | 'nao_iniciado';
+  const valid: Array<typeof status> = ['conectado', 'pendente', 'nao_iniciado'];
+  if (!platform || !valid.includes(status)) {
+    return { ok: false, message: 'Programa inválido.' };
+  }
+
+  const snapshot = await repo.snapshot();
+  const programs = snapshot.settings.affiliate_programs.some((p) => p.platform === platform)
+    ? snapshot.settings.affiliate_programs.map((p) => (p.platform === platform ? { ...p, status } : p))
+    : [...snapshot.settings.affiliate_programs, { platform, status }];
+
+  await repo.saveSettings({ ...snapshot.settings, affiliate_programs: programs });
+  revalidateAll();
+
+  const label =
+    status === 'conectado' ? 'aprovado' : status === 'pendente' ? 'em análise' : 'não iniciado';
+  return { ok: true, message: `Status de ${PLATFORM_LABEL[platform] ?? platform} atualizado para ${label}.` };
 }
 
 export async function resetDemoAction(): Promise<void> {

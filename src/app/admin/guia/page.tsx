@@ -1,6 +1,10 @@
 import Link from 'next/link';
+import { repo } from '@/lib/db';
 import { PageHeader, SectionCard, Alert } from '@/components/ui';
+import type { Platform } from '@/lib/types';
+import { ProgramStatusButtons } from './ProgramStatusButtons';
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Guia de afiliação' };
 
 interface Program {
@@ -131,6 +135,30 @@ const PROGRAMS: Program[] = [
   },
 ];
 
+const PLATFORM_NAME: Record<Platform, string> = {
+  shopee: 'Shopee Afiliados',
+  tiktok: 'TikTok Shop',
+  mercadolivre: 'Mercado Livre Afiliados',
+  amazon: 'Amazon Associados',
+  hotmart: 'Hotmart',
+  kiwify: 'Kiwify',
+  outro: 'Outro',
+};
+
+type ProgramStatus = 'conectado' | 'pendente' | 'nao_iniciado';
+
+const PROGRAM_BADGE: Record<ProgramStatus, string> = {
+  conectado: 'bg-lime-500/15 text-lime-300 ring-lime-500/25',
+  pendente: 'bg-amber-500/15 text-amber-300 ring-amber-500/25',
+  nao_iniciado: 'bg-white/[0.06] text-white/40 ring-white/10',
+};
+
+const PROGRAM_BADGE_LABEL: Record<ProgramStatus, string> = {
+  conectado: 'aprovado',
+  pendente: 'em análise',
+  nao_iniciado: 'não iniciado',
+};
+
 const INFO_PRODUCTS = [
   {
     name: 'Hotmart',
@@ -152,7 +180,38 @@ const INFO_PRODUCTS = [
   },
 ];
 
-export default function GuidePage() {
+const DOCUMENTS = [
+  { title: 'CPF regularizado', detail: 'Todos os programas pedem. CNPJ só é necessário na Shopee (PJ) e no Mercado Livre, se você emitir nota.' },
+  { title: 'PIS / NIS / NIT', detail: 'A Shopee exige para retenção de imposto. Está no Meu INSS ou no app Carteira de Trabalho Digital.' },
+  { title: 'Conta bancária ou carteira no seu nome', detail: 'ShopeePay (Shopee), Mercado Pago (Mercado Livre), conta corrente (TikTok/Amazon). Não aceita conta de terceiros.' },
+  { title: 'Perfil público com conteúdo', detail: 'Instagram, TikTok, YouTube, blog ou grupo de WhatsApp/Telegram. Precisa ter posts, bio e link funcionando — é o item que mais reprova.' },
+  { title: 'E-mail e celular ativos', detail: 'A verificação chega por código. Use o mesmo e-mail nos programas para não perder histórico.' },
+  { title: 'Documento com foto (RG/CNH)', detail: 'TikTok Shop e Mercado Livre fazem verificação de identidade (selfie/documento).' },
+];
+
+// Ordem que reduz o tempo até a primeira comissão: a mais fácil de aprovar
+// primeiro, a que paga mais depois.
+const ORDER = [
+  { platform: 'shopee' as Platform, why: 'Aprovação mais fácil: sem mínimo de seguidores e sem análise de conteúdo longa.' },
+  { platform: 'tiktok' as Platform, why: 'Pede 1.000 seguidores, então depende de você crescer — comece já a postar para liberar.' },
+  { platform: 'amazon' as Platform, why: 'Aprova rápido e aceita CPF; comissão menor, mas converte bem em casa e beleza.' },
+  { platform: 'mercadolivre' as Platform, why: 'Exige perfil avaliado e ter vendas para 3 compradores diferentes para sacar.' },
+  { platform: 'hotmart' as Platform, why: 'Para infoprodutos: cadastro de afiliado é imediato dentro do próprio marketplace.' },
+];
+
+const REFUSALS = [
+  ['Perfil vazio, privado ou sem link na bio', 'Deixe 6 a 9 posts públicos, foto, bio dizendo o que você indica e o link funcionando.'],
+  ['Nicho que a plataforma não aceita', 'Saúde, finanças e "renda fácil" costumam ser barrados em marketplace. Vá de casa, beleza, pet, organização.'],
+  ['Dados divergentes', 'Nome do CPF diferente do titular da conta bancária, ou e-mail/celular que não confere.'],
+  ['Mesma conta usada para vender e afiliar', 'No Mercado Livre, ser vendedor desclassifica o afiliado. Use contas separadas quando a regra exigir.'],
+  ['Reenvio imediato após recusa', 'Corrija o motivo, espere alguns dias e reaplique. Reaplicar sem mudança repete a recusa.'],
+];
+
+export default async function GuidePage() {
+  const db = await repo.snapshot();
+  const statusOf = (platform: Platform) =>
+    db.settings.affiliate_programs.find((p) => p.platform === platform)?.status ?? 'nao_iniciado';
+
   return (
     <div>
       <PageHeader
@@ -171,6 +230,48 @@ export default function GuidePage() {
           confirme no site oficial antes de se inscrever — o número que aparece no seu painel é o que vale.
         </p>
       </Alert>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <SectionCard title="Tenha isso em mãos antes de começar" subtitle="É o que trava 90% dos cadastros">
+          <ul className="space-y-2.5">
+            {DOCUMENTS.map((doc) => (
+              <li key={doc.title} className="flex gap-2.5">
+                <span className="mt-0.5 text-lime-400">✓</span>
+                <div>
+                  <p className="text-[12.5px] font-medium text-white/85">{doc.title}</p>
+                  <p className="mt-0.5 text-[11.5px] leading-snug text-white/45">{doc.detail}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </SectionCard>
+
+        <SectionCard title="Ordem recomendada" subtitle="Do mais fácil de aprovar ao que paga mais">
+          <ol className="space-y-3">
+            {ORDER.map((item, i) => {
+              const status = statusOf(item.platform);
+              return (
+                <li key={item.platform} className="flex gap-2.5">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500/20 text-[10px] font-bold text-brand-200">
+                    {i + 1}
+                  </span>
+                  <div className="min-w-0">
+                    <p className="flex flex-wrap items-center gap-1.5 text-[12.5px] font-medium text-white/85">
+                      {PLATFORM_NAME[item.platform]}
+                      <span className={`badge ${PROGRAM_BADGE[status]}`}>{PROGRAM_BADGE_LABEL[status]}</span>
+                    </p>
+                    <p className="mt-0.5 text-[11.5px] leading-snug text-white/45">{item.why}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+          <p className="mt-3 border-t border-white/[0.07] pt-3 text-[11px] leading-snug text-white/35">
+            Marque o status no cartão de cada plataforma abaixo — o painel passa a refletir a mesma informação de
+            Configurações.
+          </p>
+        </SectionCard>
+      </div>
 
       <div className="mt-4 space-y-4">
         {PROGRAMS.map((program) => (
@@ -191,6 +292,12 @@ export default function GuidePage() {
                     >
                       {program.urlLabel} ↗
                     </a>
+                    <div className="mt-2">
+                      <ProgramStatusButtons
+                        platform={program.id as Platform}
+                        status={statusOf(program.id as Platform)}
+                      />
+                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-[11px] sm:grid-cols-1 sm:gap-1">
@@ -283,6 +390,27 @@ export default function GuidePage() {
             Criar minha página de vendas
           </Link>
         </div>
+      </SectionCard>
+
+      <SectionCard
+        className="mt-4"
+        title="Fui recusado — e agora?"
+        subtitle="Motivos mais comuns e o que corrigir antes de reenviar"
+      >
+        <div className="grid gap-2.5 sm:grid-cols-2">
+          {REFUSALS.map(([reason, fix]) => (
+            <div key={reason} className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3">
+              <p className="text-[12px] font-semibold text-rose-200/90">✕ {reason}</p>
+              <p className="mt-1 text-[11.5px] leading-snug text-white/50">
+                <b className="text-white/70">Como resolver:</b> {fix}
+              </p>
+            </div>
+          ))}
+        </div>
+        <p className="mt-3 text-[11px] leading-snug text-white/35">
+          A Shopee e o Mercado Livre costumam mandar o motivo por e-mail. Se não vier, reabra a solicitação no painel
+          da plataforma antes de criar outra conta — conta duplicada é motivo de bloqueio.
+        </p>
       </SectionCard>
 
       <SectionCard className="mt-4" title="Seus próximos 7 dias" subtitle="Plano simples para a primeira comissão">
